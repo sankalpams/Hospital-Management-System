@@ -1,0 +1,12 @@
+spring:
+  mail:
+    host: localhost
+    port: 1025
+    properties:
+      mail.smtp.auth: false
+app:
+  security:
+    jwt-secret: ZGV2LXNlY3JldC1tdXN0LWJlLWF0LWxlYXN0LTMyLWJ5dGVzLWxvbmc=
+  storage:
+    upload-dir: ./target/test-uploads
+

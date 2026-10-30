@@ -1,0 +1,7 @@
+spring:
+  mail:
+    properties:
+      mail.smtp.auth: false
+logging:
+  level:
+    org.springframework.security: INFO
