@@ -1,0 +1,12 @@
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { api, apiMessage } from '../api/client';
+import { useAuth } from '../hooks/use-auth';
+import { PageHeader } from '../components/PageHeader';
+import { FormField } from '../components/FormField';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+const schema = z.object({ email: z.string().email(), firstName: z.string().min(1), lastName: z.string().min(1), phone: z.string().regex(/^$|^\+94\d{9}$/, 'Use +94XXXXXXXXX.') });
+export function ProfilePage() { const { user, refreshProfile } = useAuth(); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema), defaultValues: { email: user?.email, firstName: user?.firstName, lastName: user?.lastName, phone: user?.phone ?? '' } }); useEffect(() => form.reset({ email: user?.email, firstName: user?.firstName, lastName: user?.lastName, phone: user?.phone ?? '' }), [user, form]); const submit = form.handleSubmit(async (values) => { try { setError(''); await api.put('/users/me', values); await refreshProfile(); setNotice('Your profile has been saved.'); } catch (err) { setError(apiMessage(err)); } }); return <><PageHeader title="My profile" description="Keep your contact details current." /><form className="grid max-w-2xl gap-4 border bg-surface p-5 shadow-panel sm:grid-cols-2" onSubmit={submit}><FormField label="First name" error={form.formState.errors.firstName?.message}><Input {...form.register('firstName')} /></FormField><FormField label="Last name" error={form.formState.errors.lastName?.message}><Input {...form.register('lastName')} /></FormField><FormField label="Email" error={form.formState.errors.email?.message}><Input type="email" {...form.register('email')} /></FormField><FormField label="Phone" error={form.formState.errors.phone?.message}><Input placeholder="+94771234567" {...form.register('phone')} /></FormField><div className="sm:col-span-2"><p className="mb-3 text-sm text-muted-foreground">Role: {user?.role.replace('_', ' ')}</p>{error && <p className="mb-3 text-sm text-danger">{error}</p>}{notice && <p className="mb-3 text-sm text-success">{notice}</p>}<Button type="submit" disabled={form.formState.isSubmitting}>{form.formState.isSubmitting ? 'Saving…' : 'Save profile'}</Button></div></form></>; }
