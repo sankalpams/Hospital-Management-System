@@ -1,0 +1,11 @@
+{
+  "name": "@hms/client",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"client dev: not implemented until Task 8\"",
+    "test": "echo \"client tests: skipped until Task 8\"",
+    "typecheck": "echo \"client typecheck: skipped until Task 8\""
+  }
+}
