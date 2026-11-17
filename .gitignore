@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+apps/server/uploads/
+backups/
+playwright-report/
+test-results/
+graphify-out/cache/
+*.log
+.DS_Store
