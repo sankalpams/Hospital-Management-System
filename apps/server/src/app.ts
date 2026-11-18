@@ -7,6 +7,8 @@ import { errorHandler } from './http/errorHandler.js';
 import { notFound } from './http/errors.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { auditRouter } from './modules/audit/audit.routes.js';
+import { settingsRouter } from './modules/settings/settings.routes.js';
+import { usersRouter } from './modules/users/users.routes.js';
 import { healthRouter } from './modules/health/health.routes.js';
 
 export interface AppOptions {
@@ -34,6 +36,8 @@ export function createApp(options: AppOptions = {}): Express {
   api.use('/health', healthRouter);
   api.use('/auth', authRouter(loginRateLimit));
   api.use('/audit-logs', auditRouter());
+  api.use('/users', usersRouter());
+  api.use('/settings', settingsRouter());
   app.use('/api/v1', api);
 
   app.use((_req, _res, next) => next(notFound('Route not found')));

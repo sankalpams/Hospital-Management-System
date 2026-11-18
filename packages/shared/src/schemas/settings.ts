@@ -7,7 +7,7 @@ export const settingsSchema = z.object({
   currencyCode: z.string().trim().length(3).toUpperCase(),
   currencySymbol: z.string().trim().min(1).max(8),
   taxRatePercent: z.number().min(0).max(100),
-  sessionTimeoutMinutes: z.number().int().min(1).max(1440),
+  sessionTimeoutMinutes: z.number().int().min(5).max(120),
   expiryAlertDays: z.number().int().min(1).max(365),
 });
 
