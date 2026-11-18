@@ -1,10 +1,10 @@
 import type { HTMLAttributes } from 'react';
-import { cx } from './cx';
+import { cn } from './cn';
 
 export function Card({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cx('rounded-card border border-border bg-surface p-6 shadow-card', className)}
+      className={cn('rounded-card border border-border bg-surface p-6 shadow-card', className)}
       {...rest}
     />
   );
