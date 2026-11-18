@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { prisma } from '../../db.js';
-import { loginAs, resetDb, testApp } from '../../../test/helpers.js';
+import { createUser, loginAs, resetDb, testApp } from '../../../test/helpers.js';
 
 const app = testApp();
 const valid = {
@@ -87,5 +87,13 @@ describe('settings API', () => {
     expect((await agent.put('/api/v1/settings').send(valid)).status).toBe(403);
     expect((await agent.get('/api/v1/settings')).status).toBe(403);
     expect((await agent.get('/api/v1/settings/public')).status).toBe(200);
+  });
+
+  it('GET /settings/public is allowed while mustChangePassword is set', async () => {
+    await createUser({ role: 'NURSE', username: 'fresh', mustChangePassword: true });
+    const agent = request.agent(app);
+    expect((await agent.post('/api/v1/auth/login').send({ username: 'fresh', password: 'Password1!' })).status).toBe(200);
+    expect((await agent.get('/api/v1/settings/public')).status).toBe(200);
+    expect((await agent.get('/api/v1/settings')).status).toBe(403);
   });
 });

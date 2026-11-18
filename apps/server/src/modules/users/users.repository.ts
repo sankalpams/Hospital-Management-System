@@ -1,5 +1,6 @@
 import type { Prisma, RoleName } from '@prisma/client';
 import { prisma } from '../../db.js';
+import { badRequest } from '../../http/errors.js';
 
 type Db = Prisma.TransactionClient;
 
@@ -58,9 +59,11 @@ export const usersRepository = {
     return db.user.findUnique({ where: { username }, select: { id: true } });
   },
 
-  /** Roles are reference rows; make sure the row exists before linking a user to it. */
-  ensureRole(name: RoleName, db: Db = prisma) {
-    return db.role.upsert({ where: { name }, update: {}, create: { name, description: name } });
+  /** Roles are seeded reference rows; a missing row is a client-visible validation error. */
+  async requireRole(name: RoleName, db: Db = prisma) {
+    const role = await db.role.findUnique({ where: { name } });
+    if (!role) throw badRequest(`Unknown role: ${name}`);
+    return role;
   },
 
   create(data: Prisma.UserUncheckedCreateInput, db: Db = prisma) {
@@ -75,7 +78,7 @@ export const usersRepository = {
   async lockActiveAdmins(db: Db): Promise<void> {
     await db.$queryRaw`
       SELECT u."id" FROM "users" u JOIN "roles" r ON r."id" = u."roleId"
-      WHERE r."name" = 'ADMIN' AND u."isActive" = true FOR UPDATE OF u`;
+      WHERE r."name" = 'ADMIN' AND u."isActive" = true ORDER BY u."id" FOR UPDATE OF u`;
   },
 
   countActiveAdmins(db: Db): Promise<number> {

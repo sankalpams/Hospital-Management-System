@@ -3,7 +3,8 @@ import request from 'supertest';
 import { passwordSchema } from '@hms/shared';
 import { prisma } from '../../db.js';
 import { createUser, loginAs, resetDb, testApp } from '../../../test/helpers.js';
-import { generateTemporaryPassword, usersService } from './users.service.js';
+import { Prisma } from '@prisma/client';
+import { generateTemporaryPassword, isUsernameViolation, usersService } from './users.service.js';
 
 const URL = '/api/v1/users';
 const app = testApp();
@@ -222,5 +223,43 @@ describe('users admin API', () => {
     const res = await agent.patch(`${URL}/${other.id}`).send({ isActive: false });
     expect(res.status).toBe(200);
     expect(res.body.isActive).toBe(false);
+  });
+});
+
+describe('users R10 follow-ups', () => {
+  beforeEach(resetDb);
+
+  it('create/update with a missing role row returns 400 instead of inventing the role', async () => {
+    const { agent } = await loginAs('ADMIN', app);
+    await prisma.role.deleteMany({ where: { name: 'NURSE' } });
+    const res = await agent.post(URL).send({ username: 'nina', fullName: 'Nina P', role: 'NURSE' });
+    expect(res.status).toBe(400);
+    expect(await prisma.role.count({ where: { name: 'NURSE' } })).toBe(0);
+    const other = await createUser({ role: 'DOCTOR', username: 'doc9' });
+    const upd = await agent.patch(`${URL}/${other.id}`).send({ role: 'NURSE' });
+    expect(upd.status).toBe(400);
+  });
+
+  it('isUsernameViolation only matches P2002 on username', () => {
+    const mk = (target: unknown) =>
+      new Prisma.PrismaClientKnownRequestError('x', { code: 'P2002', clientVersion: '6', meta: { target } });
+    expect(isUsernameViolation(mk(['username']))).toBe(true);
+    expect(isUsernameViolation(mk('users_username_key'))).toBe(true);
+    expect(isUsernameViolation(mk(['email']))).toBe(false);
+    expect(isUsernameViolation(new Error('x'))).toBe(false);
+  });
+
+  it('concurrent mutual deactivation of two admins leaves exactly one active admin', async () => {
+    const a = await createUser({ role: 'ADMIN', username: 'adminA' });
+    const b = await createUser({ role: 'ADMIN', username: 'adminB' });
+    const results = await Promise.allSettled([
+      usersService.update(a.id, b.id, { isActive: false }, null),
+      usersService.update(b.id, a.id, { isActive: false }, null),
+    ]);
+    expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+    const rejected = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0]?.reason).toMatchObject({ status: 409, code: 'LAST_ADMIN' });
+    expect(await prisma.user.count({ where: { isActive: true, role: { name: 'ADMIN' } } })).toBe(1);
   });
 });

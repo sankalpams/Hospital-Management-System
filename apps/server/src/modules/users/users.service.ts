@@ -45,8 +45,13 @@ export function generateTemporaryPassword(): string {
   return chars.join('');
 }
 
-const isUniqueViolation = (err: unknown) =>
-  err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002';
+/** True only for a P2002 whose target (column list or index name) involves `username`. */
+export const isUsernameViolation = (err: unknown): boolean => {
+  if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== 'P2002') return false;
+  const target = err.meta?.target;
+  if (Array.isArray(target)) return target.includes('username');
+  return typeof target === 'string' && target.includes('username');
+};
 
 const TRACKED = ['fullName', 'email', 'role', 'isActive'] as const;
 
@@ -69,7 +74,7 @@ export const usersService = {
     const passwordHash = await hashPassword(temporaryPassword);
     try {
       const user = await prisma.$transaction(async (tx) => {
-        const role = await usersRepository.ensureRole(input.role, tx);
+        const role = await usersRepository.requireRole(input.role, tx);
         const created = await usersRepository.create(
           {
             username: input.username,
@@ -98,7 +103,7 @@ export const usersService = {
       });
       return { user: toView(user), temporaryPassword };
     } catch (err) {
-      if (isUniqueViolation(err)) throw usernameTaken();
+      if (isUsernameViolation(err)) throw usernameTaken();
       throw err;
     }
   },
@@ -128,7 +133,7 @@ export const usersService = {
       if (input.email !== undefined) data.email = input.email;
       if (input.isActive !== undefined) data.isActive = input.isActive;
       if (input.role !== undefined) {
-        data.roleId = (await usersRepository.ensureRole(input.role, tx)).id;
+        data.roleId = (await usersRepository.requireRole(input.role, tx)).id;
       }
 
       const next = await usersRepository.update(targetId, data, tx);

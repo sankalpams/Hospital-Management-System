@@ -7,8 +7,8 @@ import { getPublicSettings, getSettings, putSettings } from './settings.controll
 
 export function settingsRouter(): Router {
   const router = Router();
-  // Public subset: any signed-in user.
-  router.get('/public', requireAuth(), getPublicSettings);
+  // Public subset: any signed-in user, including one who must still change their password.
+  router.get('/public', requireAuth({ allowPasswordChange: true }), getPublicSettings);
   router.get('/', requireAuth(), requirePermission('settings:manage'), getSettings);
   router.put(
     '/',
