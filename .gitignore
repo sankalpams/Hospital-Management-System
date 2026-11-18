@@ -84,3 +84,6 @@ coverage/
 
 # Logs
 *.log.github/skills/impeccable/
+
+# local demo logins (never commit)
+dev-accounts.local.md
