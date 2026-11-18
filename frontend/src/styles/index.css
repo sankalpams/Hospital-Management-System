@@ -1,0 +1,41 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background font-sans text-[15px] leading-normal text-foreground antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-heading font-semibold tracking-tight text-foreground;
+  }
+  /* Keyboard focus is always visible (MASTER.md §6). Mouse clicks do not show the ring. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Printed reports and receipts: only the document, no app chrome. */
+@media print {
+  body { background: var(--color-surface); }
+  #app-sidebar, .app-topbar, .no-print { display: none !important; }
+  main { padding: 0 !important; max-width: none !important; }
+  .lg\:pl-sidebar { padding-left: 0 !important; }
+  .print-sheet { border: 0 !important; box-shadow: none !important; }
+}

@@ -1,0 +1,36 @@
+# Development-only MySQL 8 for HMS.
+# Production uses a native MySQL 8 Windows service (see docs/08-windows-deployment.md).
+# Port 3307 on the host so it never collides with another MySQL on 3306.
+#
+#   docker compose --env-file ../../.env -f docker-compose.dev.yml up -d
+name: hms-java
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: hms-java-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${HMS_DB_ROOT_PASSWORD:?set HMS_DB_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: hms
+      MYSQL_USER: ${HMS_DB_USERNAME:?set HMS_DB_USERNAME in .env}
+      MYSQL_PASSWORD: ${HMS_DB_PASSWORD:?set HMS_DB_PASSWORD in .env}
+      TZ: UTC
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+00:00
+      - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION,ONLY_FULL_GROUP_BY
+      - --log-bin=hms-bin
+      - --binlog-expire-logs-seconds=604800
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - hms_java_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  hms_java_mysql_data:

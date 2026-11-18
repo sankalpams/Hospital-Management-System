@@ -1,0 +1,86 @@
+# secrets
+.env
+*.env.local
+
+# backend
+backend/target/
+backend/data/
+backend/logs/
+*.log
+
+# frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# runtime data
+data/
+backups/
+run.log
+run.err
+run.pid
+
+# release builds
+release/
+
+# Claude configuration
+.claude/
+
+# Impeccable tooling configuration (optional)
+.impeccable/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build files
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+
+# Local editor files
+.vscode/
+
+# Claude
+.claude/
+
+# Impeccable
+.impeccable/
+.github/agents/impeccable-*.agent.md
+.github/hooks/impeccable.json
+.github/skills/impeccable/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build files
+dist/
+build/
+coverage/
+
+# Editor settings
+.vscode/
+
+# Logs
+*.log.github/skills/impeccable/

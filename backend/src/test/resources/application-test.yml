@@ -1,0 +1,16 @@
+# Integration tests run against a dedicated schema on the dev MySQL (never the dev 'hms' schema).
+# The schema is wiped and re-migrated once per test JVM (see TestDatabaseConfig).
+spring:
+  datasource:
+    url: ${HMS_TEST_DB_URL:jdbc:mysql://127.0.0.1:3307/hms_test?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true}
+  flyway:
+    clean-disabled: false
+  session:
+    jdbc:
+      cleanup-cron: "-"
+
+hms:
+  upload-dir: target/test-uploads
+  bootstrap-admin:
+    username: ""
+    password: ""

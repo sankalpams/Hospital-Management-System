@@ -1,0 +1,13 @@
+server:
+  servlet:
+    session:
+      cookie:
+        secure: ${HMS_COOKIE_SECURE:true}
+
+logging:
+  file:
+    name: ${HMS_LOG_DIR:./logs}/hms-backend.log
+  logback:
+    rollingpolicy:
+      max-file-size: 20MB
+      max-history: 30

@@ -1,0 +1,108 @@
+# ---------------------------------------------------------------------------
+# HMS backend configuration. All secrets come from environment variables
+# (see /.env.example). In development the repo-root .env file is imported.
+# ---------------------------------------------------------------------------
+spring:
+  application:
+    name: hms-backend
+  config:
+    import:
+      - optional:file:../.env[.properties]
+      - optional:file:./.env[.properties]
+  profiles:
+    default: dev
+  datasource:
+    url: ${HMS_DB_URL}
+    username: ${HMS_DB_USERNAME}
+    password: ${HMS_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 3
+      pool-name: hms-pool
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate          # schema is owned by Flyway
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+        jdbc.batch_size: 50
+        default_batch_fetch_size: 50     # loads lazy collections for a whole page in one query (no N+1)
+        order_inserts: true
+        order_updates: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    clean-disabled: true          # flyway clean can never wipe a real database
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  session:
+    jdbc:
+      initialize-schema: never    # tables created by Flyway V1
+      table-name: SPRING_SESSION
+      cleanup-cron: "0 */5 * * * *"
+    timeout: ${HMS_SESSION_IDLE:30m}
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+
+server:
+  port: ${HMS_SERVER_PORT:8080}
+  address: ${HMS_SERVER_ADDRESS:127.0.0.1}   # only reachable through Apache / Vite proxy
+  forward-headers-strategy: native            # trust X-Forwarded-* from the local Apache
+  shutdown: graceful                          # a service stop finishes in-flight requests (payments, dispensing)
+  error:
+    include-message: never
+    include-stacktrace: never
+    whitelabel:
+      enabled: false
+  servlet:
+    session:
+      timeout: ${HMS_SESSION_IDLE:30m}
+      cookie:
+        name: HMS_SESSION
+        http-only: true
+        same-site: strict
+        secure: ${HMS_COOKIE_SECURE:false}
+        path: /
+
+management:
+  endpoints:
+    web:
+      base-path: /api/v1/actuator
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: false
+    path: /api/v1/docs/openapi.json
+  swagger-ui:
+    enabled: false
+    path: /api/v1/docs
+
+hms:
+  cors-origins: ${HMS_CORS_ORIGINS:}
+  upload-dir: ${HMS_UPLOAD_DIR:./data/uploads}
+  bootstrap-admin:
+    username: ${HMS_BOOTSTRAP_ADMIN_USERNAME:}
+    password: ${HMS_BOOTSTRAP_ADMIN_PASSWORD:}
+    full-name: ${HMS_BOOTSTRAP_ADMIN_FULLNAME:System Administrator}
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-}]"
+  level:
+    root: INFO
+    lk.hms: INFO
+    org.hibernate.SQL: WARN
