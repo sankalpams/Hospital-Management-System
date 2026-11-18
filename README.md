@@ -11,7 +11,7 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss&logoColor=white)
 ![Apache](https://img.shields.io/badge/Apache-HTTP%20Server-D22128?logo=apache&logoColor=white)
 
-[Features](#-features) · [Quick start](#-quick-start) · [Architecture](#-architecture) · [Roles](#-roles) · [Testing](#-testing) · [Docs](#-documentation)
+[Features](#-features) · [Quick start](#-quick-start) · [Accounts](#-sign-in-accounts-development) · [Architecture](#-architecture) · [Roles](#-roles) · [Testing](#-testing) · [Docs](#-documentation)
 
 </div>
 
@@ -61,6 +61,26 @@ Fills the development database with synthetic activity (about 3,000 patients, 20
 cd backend; .\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--hms.demo.seed=true"
 ```
 </details>
+
+##  Sign-in accounts (development)
+
+One login per role in the **local development database**, for trying each part of the system at http://localhost:5173.
+
+> **Development only.** These passwords exist only in this machine's dev database. Never create them on a real server, and change or remove this table before the repository is shared publicly.
+
+| Role | Username | Password |
+|---|---|---|
+| Super Admin | `sysadmin` | `Summit-Maple-886` |
+| Hospital Admin | `hospital.admin` | `Granite-Amber-400` |
+| Doctor | `doctor` | `Coral-Harbor-374` |
+| Nurse | `nurse` | `Tide-Maple-337` |
+| Receptionist | `reception` | `Indigo-Summit-618` |
+| Lab Staff | `lab` | `Maple-Granite-169` |
+| Pharmacist | `pharmacist` | `Cedar-Falcon-345` |
+| Accountant | `accountant` | `Coral-Maple-751` |
+| HR Manager | `hr.manager` | `Monsoon-Falcon-595` |
+
+`doctor` is linked to the seeded doctor profile **Dr. Rizwan Abeysekera** (Paediatrics), so it sees its own appointments and can run consultations. A real installation starts with only the first administrator, who creates staff accounts in **Users**.
 
 ##  Architecture
 
