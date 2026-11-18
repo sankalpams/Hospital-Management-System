@@ -1,0 +1,29 @@
+/* Design tokens, authoritative per design spec section 8.2. The only place raw colour values live. */
+:root {
+  --color-primary: #0f766e;
+  --color-primary-hover: #115e59;
+  --color-primary-subtle: #ccfbf1;
+  --color-text: #0f172a;
+  --color-muted: #475569;
+  --color-border: #e2e8f0;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-danger: #b91c1c;
+  --color-info: #1d4ed8;
+  --color-overlay: rgb(15 23 42 / 0.5);
+
+  --radius-control: 6px;
+  --radius-card: 10px;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.1);
+  --shadow-overlay: 0 10px 30px rgb(15 23 42 / 0.2);
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-size-body: 14px;
+  --line-height-body: 1.5;
+
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}
