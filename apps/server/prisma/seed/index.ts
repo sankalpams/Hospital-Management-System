@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
-import { createContext, parseScale, type SeedModule, type SeedScale } from './context.js';
+import { assertSeedAllowed, createContext, parseScale, type SeedModule, type SeedScale } from './context.js';
 import { coreModule } from './modules/core.js';
 
 /** Ordered list; later slices append their modules here. */
@@ -23,11 +23,17 @@ export async function runSeed(opts: {
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
-  const prisma = new PrismaClient();
-  runSeed({ prisma, scale: parseScale(process.env.SEED_SCALE) })
+  let prisma: PrismaClient | undefined;
+  Promise.resolve()
+    .then(() => {
+      assertSeedAllowed(process.env);
+      const scale = parseScale(process.env.SEED_SCALE);
+      prisma = new PrismaClient();
+      return runSeed({ prisma, scale });
+    })
     .catch((err) => {
       console.error(err);
       process.exitCode = 1;
     })
-    .finally(() => prisma.$disconnect());
+    .finally(() => prisma?.$disconnect());
 }

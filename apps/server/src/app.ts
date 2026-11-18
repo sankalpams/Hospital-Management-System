@@ -26,7 +26,7 @@ export function createApp(options: AppOptions = {}): Express {
     cors({
       origin: config.clientOrigin,
       credentials: true,
-      exposedHeaders: ['X-Session-Expires-At'],
+      exposedHeaders: ['X-Session-Expires-At', 'Date'],
     }),
   );
   app.use(express.json({ limit: '1mb' }));

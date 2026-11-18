@@ -21,3 +21,14 @@ describe('health and fallthrough', () => {
     expect(res.body.error.code).toBe('NOT_FOUND');
   });
 });
+
+describe('CORS', () => {
+  it('exposes the session-expiry and Date headers to the browser', async () => {
+    const res = await request(createApp())
+      .get('/api/v1/health')
+      .set('Origin', 'http://localhost:5173');
+    const exposed = String(res.headers['access-control-expose-headers']).toLowerCase();
+    expect(exposed).toContain('x-session-expires-at');
+    expect(exposed).toContain('date');
+  });
+});

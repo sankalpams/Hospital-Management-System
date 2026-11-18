@@ -42,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const me = await api<MeResponse>('/auth/me');
       setUser(me.user);
+      setExpired(false);
       if (!me.expiresAt) return null;
       const next = new Date(me.expiresAt);
       setExpiresAt(next);

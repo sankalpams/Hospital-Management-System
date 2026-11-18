@@ -111,3 +111,49 @@ describe('RequireAuth redirect back', () => {
     expect(await screen.findByText('at:/secret?tab=2#sec')).toBeInTheDocument();
   });
 });
+
+function ExpiredProbe() {
+  const { user, expired, refresh } = useAuth();
+  return (
+    <div>
+      <span>{user ? 'signed-in' : 'signed-out'}</span>
+      <span>{expired ? 'is-expired' : 'not-expired'}</span>
+      <button onClick={() => void refresh()}>do-refresh</button>
+    </div>
+  );
+}
+
+describe('AuthProvider expired flag', () => {
+  it('resets expired to false when a refresh succeeds', async () => {
+    let meCalls = 0;
+    server.use(
+      http.get('*/api/v1/auth/me', () => {
+        meCalls += 1;
+        return HttpResponse.json({
+          user: adminUser,
+          expiresAt: new Date(Date.now() - 60_000).toISOString(),
+        });
+      }),
+      http.get('*/api/v1/other', () =>
+        HttpResponse.json({ error: { code: 'UNAUTHENTICATED', message: 'no' } }, { status: 401 }),
+      ),
+    );
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter>
+          <AuthProvider>
+            <ExpiredProbe />
+          </AuthProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    await screen.findByText('signed-in');
+    await act(async () => {
+      await api('/other').catch(() => undefined);
+    });
+    await screen.findByText('is-expired');
+    await userEvent.click(screen.getByText('do-refresh'));
+    await screen.findByText('not-expired');
+    expect(meCalls).toBeGreaterThanOrEqual(2);
+  });
+});
