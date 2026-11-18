@@ -136,4 +136,43 @@ describe('AuditLogPage', () => {
     await userEvent.type(screen.getByLabelText('To date'), '2026-11-01');
     expect(await screen.findByText(/start date must be on or before/i)).toBeInTheDocument();
   });
+
+  it('debounces the entity type filter', async () => {
+    signIn('ADMIN');
+    const seen: (string | null)[] = [];
+    server.use(
+      http.get('*/api/v1/users', () => HttpResponse.json({ items: [], page: 1, pageSize: 200, total: 0 })),
+      http.get('*/api/v1/audit-logs', ({ request }) => {
+        seen.push(new URL(request.url).searchParams.get('entityType'));
+        return HttpResponse.json({ items: [], page: 1, pageSize: 25, total: 0 });
+      }),
+    );
+    renderWithProviders(<App />, '/admin/audit');
+    await userEvent.type(await screen.findByLabelText('Entity type'), 'User');
+    await waitFor(() => expect(seen).toContain('User'));
+    expect(seen.filter((v) => v !== null && v !== 'User')).toEqual([]);
+  });
+
+  it('only sets aria-controls on the toggle while the details are shown', async () => {
+    signIn('ADMIN');
+    server.use(
+      http.get('*/api/v1/users', () => HttpResponse.json({ items: [], page: 1, pageSize: 200, total: 0 })),
+      http.get('*/api/v1/audit-logs', () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: 'l1', userId: null, action: 'UPDATE', entityType: 'User', entityId: 'u1',
+              before: { a: 1 }, after: { a: 2 }, ip: null, createdAt: '2026-11-18T05:00:00Z', user: null,
+            },
+          ],
+          page: 1, pageSize: 25, total: 1,
+        }),
+      ),
+    );
+    renderWithProviders(<App />, '/admin/audit');
+    const toggle = await screen.findByRole('button', { name: 'Show changes' });
+    expect(toggle).not.toHaveAttribute('aria-controls');
+    await userEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'Hide changes' })).toHaveAttribute('aria-controls', 'audit-detail-l1');
+  });
 });

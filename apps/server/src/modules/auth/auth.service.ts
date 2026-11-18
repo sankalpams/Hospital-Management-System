@@ -5,7 +5,7 @@ import { AppError } from '../../http/errors.js';
 import { clock } from '../../lib/clock.js';
 import { auditService } from '../audit/audit.service.js';
 import { hashPassword, verifyPassword } from './password.js';
-import { sessionService, type SessionMeta } from './session.service.js';
+import { effectiveExpiry, sessionService, type SessionMeta } from './session.service.js';
 
 export const MAX_FAILED_LOGINS = 5;
 export const LOCKOUT_MS = 15 * 60_000;
@@ -31,7 +31,7 @@ export const authService = {
     username: string,
     password: string,
     meta: SessionMeta,
-  ): Promise<{ token: string; user: PublicUser }> {
+  ): Promise<{ token: string; expiresAt: Date; user: PublicUser }> {
     const ip = meta.ip ?? null;
     const user = await prisma.user.findUnique({ where: { username }, include: { role: true } });
     const now = clock.now();
@@ -74,7 +74,7 @@ export const authService = {
       throw new AppError(403, 'ACCOUNT_INACTIVE', 'This account is inactive');
     }
 
-    const token = await prisma.$transaction(async (tx) => {
+    const { token, expiresAt } = await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: user.id },
         data: { failedLoginCount: 0, lockedUntil: null, lastLoginAt: now },
@@ -87,11 +87,12 @@ export const authService = {
         entityId: created.session.id,
         ip,
       });
-      return created.token;
+      return { token: created.token, expiresAt: effectiveExpiry(created.session) };
     });
 
     return {
       token,
+      expiresAt,
       user: {
         id: user.id,
         username: user.username,

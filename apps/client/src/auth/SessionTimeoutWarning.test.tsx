@@ -1,21 +1,24 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { setServerOffset } from '../lib/api';
 import { AuthContext, type AuthContextValue } from './AuthContext';
 import { SessionTimeoutWarning } from './SessionTimeoutWarning';
 
 function Where() {
   const loc = useLocation();
-  return <div data-testid="where">{`${loc.pathname}${loc.search}`}</div>;
+  const from = (loc.state as { from?: string } | null)?.from ?? '';
+  return <div data-testid="where">{`${loc.pathname}${loc.search}|${from}`}</div>;
 }
 
-function setup(secondsLeft: number) {
-  const refresh = vi.fn().mockResolvedValue(undefined);
+function setup(secondsLeft: number, refreshResult: () => Date | null = () => null) {
+  const refresh = vi.fn().mockImplementation(() => Promise.resolve(refreshResult()));
   const logout = vi.fn().mockResolvedValue(undefined);
   const value: AuthContextValue = {
     user: { id: '1', username: 'a', fullName: 'A', role: 'ADMIN', mustChangePassword: false },
     expiresAt: new Date(Date.now() + secondsLeft * 1000),
     loading: false,
+    expired: false,
     login: vi.fn(),
     logout,
     refresh,
@@ -42,7 +45,10 @@ function setup(secondsLeft: number) {
 }
 
 beforeEach(() => vi.useFakeTimers());
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+  vi.useRealTimers();
+  setServerOffset(0);
+});
 
 describe('SessionTimeoutWarning', () => {
   it('stays hidden while more than 60 seconds remain', () => {
@@ -66,6 +72,18 @@ describe('SessionTimeoutWarning', () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
+  it('applies the server clock offset to the countdown', () => {
+    setServerOffset(30_000); // the server clock is 30s ahead of ours: only 29s really remain
+    setup(59);
+    expect(screen.getByTestId('countdown')).toHaveTextContent('29');
+  });
+
+  it('does not warn early when the server clock is behind ours', () => {
+    setServerOffset(-30_000); // 89s really remain
+    setup(59);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('Log out logs out and goes to the login page', async () => {
     const { logout } = setup(59);
     await act(async () => {
@@ -75,12 +93,32 @@ describe('SessionTimeoutWarning', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/login');
   });
 
-  it('logs out and navigates to /login?reason=timeout at zero', async () => {
-    const { logout } = setup(59);
+  it('at zero, a refresh that extends the session means no logout', async () => {
+    const { logout, refresh } = setup(59, () => new Date(Date.now() + 15 * 60_000));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60_000);
+    });
+    expect(refresh).toHaveBeenCalled();
+    expect(logout).not.toHaveBeenCalled();
+    expect(screen.getByTestId('where')).toHaveTextContent('/patients');
+  });
+
+  it('at zero, a failed refresh logs out and goes to /login?reason=timeout, remembering the page', async () => {
+    const { logout, refresh } = setup(59, () => null);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60_000);
+    });
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(logout).toHaveBeenCalledTimes(1);
+    expect(logout).toHaveBeenCalledWith({ reason: 'timeout' });
+    expect(screen.getByTestId('where')).toHaveTextContent('/login?reason=timeout|/patients');
+  });
+
+  it('at zero, a refresh that still returns a past expiry logs out', async () => {
+    const { logout } = setup(59, () => new Date(Date.now() - 1000));
     await act(async () => {
       await vi.advanceTimersByTimeAsync(60_000);
     });
     expect(logout).toHaveBeenCalledTimes(1);
-    expect(screen.getByTestId('where')).toHaveTextContent('/login?reason=timeout');
   });
 });

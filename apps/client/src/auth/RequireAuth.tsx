@@ -7,7 +7,7 @@ import { useAuth } from './useAuth';
 export const CHANGE_PASSWORD_PATH = '/change-password';
 
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, expired } = useAuth();
   const location = useLocation();
   if (loading) {
     return (
@@ -16,7 +16,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       </div>
     );
   }
-  if (!user) return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;
+  if (!user) return <Navigate to={expired ? '/login?reason=timeout' : '/login'} replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;
   if (user.mustChangePassword && location.pathname !== CHANGE_PASSWORD_PATH) {
     return <Navigate to={CHANGE_PASSWORD_PATH} replace />;
   }

@@ -93,4 +93,11 @@ describe('forced password change', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Change password' }));
     await waitFor(() => expect(screen.getByText('Current password is incorrect')).toBeInTheDocument());
   });
+
+  it('Log out still leaves the page when the logout request fails', async () => {
+    server.use(me(true), http.post('*/api/v1/auth/logout', () => HttpResponse.error()));
+    renderWithProviders(<App />, '/change-password');
+    await userEvent.click(await screen.findByRole('button', { name: 'Log out' }));
+    expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument();
+  });
 });

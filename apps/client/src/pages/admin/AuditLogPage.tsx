@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { DataTable, type Column } from '../../components/DataTable';
 import { Pagination } from '../../components/Pagination';
 import { Badge } from '../../components/ui/Badge';
@@ -38,6 +38,15 @@ interface UserOption {
 const formatWhen = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { timeZone: 'Asia/Colombo', dateStyle: 'medium', timeStyle: 'medium' });
 
+function useDebounced<T>(value: T, ms = 300): T {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(id);
+  }, [value, ms]);
+  return v;
+}
+
 const hasJson = (v: unknown) => v !== null && v !== undefined;
 
 export function AuditLogPage() {
@@ -49,6 +58,8 @@ export function AuditLogPage() {
   const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
 
+  const entityTypeQuery = useDebounced(entityType.trim());
+
   const rangeError = from && to && from > to ? 'The start date must be on or before the end date.' : undefined;
 
   const users = useQuery({
@@ -58,13 +69,14 @@ export function AuditLogPage() {
   });
 
   const query = useQuery({
-    queryKey: ['audit', { userId, action, entityType: entityType.trim(), from, to, page }],
+    queryKey: ['audit', { userId, action, entityType: entityTypeQuery, from, to, page }],
+    placeholderData: keepPreviousData,
     enabled: !rangeError,
     queryFn: () => {
       const p = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
       if (userId) p.set('userId', userId);
       if (action) p.set('action', action);
-      if (entityType.trim()) p.set('entityType', entityType.trim());
+      if (entityTypeQuery) p.set('entityType', entityTypeQuery);
       // Date-only values: the server treats them as whole Asia/Colombo days.
       if (from) p.set('from', from);
       if (to) p.set('to', to);
@@ -108,7 +120,7 @@ export function AuditLogPage() {
           <button
             type="button"
             aria-expanded={expanded.has(r.id)}
-            aria-controls={`audit-detail-${r.id}`}
+            aria-controls={expanded.has(r.id) ? `audit-detail-${r.id}` : undefined}
             onClick={() => toggle(r.id)}
             className="min-h-11 rounded-control px-2 text-sm font-medium text-primary underline"
           >

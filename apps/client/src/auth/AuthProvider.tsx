@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { can as roleCan, type Permission } from '@hms/shared';
-import { api, ApiError, setApiHandlers } from '../lib/api';
+import { api, ApiError, serverNow, setApiHandlers } from '../lib/api';
 import { AuthContext, type AuthContextValue, type AuthUser } from './AuthContext';
 
 interface MeResponse {
@@ -13,11 +13,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expired, setExpired] = useState(false);
   const queryClient = useQueryClient();
+  const expiresAtRef = useRef<Date | null>(null);
+  useEffect(() => {
+    expiresAtRef.current = expiresAt;
+  }, [expiresAt]);
 
   useEffect(() => {
     setApiHandlers({
       onUnauthenticated: () => {
+        // A 401 after the known expiry is a timeout, not a plain sign-out.
+        const known = expiresAtRef.current;
+        if (known && known.getTime() <= serverNow()) setExpired(true);
         setUser(null);
         setExpiresAt(null);
         queryClient.clear();
@@ -30,14 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => setApiHandlers({});
   }, [queryClient]);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<Date | null> => {
     try {
       const me = await api<MeResponse>('/auth/me');
       setUser(me.user);
-      if (me.expiresAt) setExpiresAt(new Date(me.expiresAt));
+      if (!me.expiresAt) return null;
+      const next = new Date(me.expiresAt);
+      setExpiresAt(next);
+      return next;
     } catch (err) {
       // 401 is the normal signed-out state; the api layer has already cleared the user.
       if (!(err instanceof ApiError) || err.status !== 401) setUser(null);
+      return null;
     }
   }, []);
 
@@ -56,11 +68,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       json: { username, password },
     });
+    setExpired(false);
     setUser(res.user);
     return res.user;
   }, []);
 
-  const logout = useCallback(async () => {
+  const logout = useCallback(async (opts?: { reason?: 'timeout' }) => {
+    if (opts?.reason === 'timeout') setExpired(true);
     try {
       await api('/auth/logout', { method: 'POST' });
     } finally {
@@ -73,8 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const can = useCallback((perm: Permission) => (user ? roleCan(user.role, perm) : false), [user]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, expiresAt, loading, login, logout, refresh, can }),
-    [user, expiresAt, loading, login, logout, refresh, can],
+    () => ({ user, expiresAt, loading, expired, login, logout, refresh, can }),
+    [user, expiresAt, loading, expired, login, logout, refresh, can],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

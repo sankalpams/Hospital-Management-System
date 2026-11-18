@@ -15,8 +15,11 @@ export interface AuthContextValue {
   /** True until the initial GET /auth/me has settled. */
   loading: boolean;
   login: (username: string, password: string) => Promise<AuthUser>;
-  logout: () => Promise<void>;
-  refresh: () => Promise<void>;
+  /** True after a timeout logout, so the login redirect can explain why. */
+  expired: boolean;
+  logout: (opts?: { reason?: 'timeout' }) => Promise<void>;
+  /** GET /auth/me; resolves to the new session expiry, or null when there is no session. */
+  refresh: () => Promise<Date | null>;
   can: (perm: Permission) => boolean;
 }
 

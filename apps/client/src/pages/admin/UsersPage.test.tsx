@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -156,5 +156,85 @@ describe('UsersPage', () => {
   it('shows an empty message', async () => {
     setup([]);
     await waitFor(() => expect(screen.getByText('No users match your filters.')).toBeInTheDocument());
+  });
+});
+
+describe('UsersPage fix round 1', () => {
+  it('refreshes the list after a reset', async () => {
+    let gets = 0;
+    setup();
+    server.use(
+      http.get('*/api/v1/users', () => {
+        gets++;
+        return HttpResponse.json({ items: [row({})], page: 1, pageSize: 25, total: 1 });
+      }),
+      http.post('*/api/v1/users/u1/reset-password', () => HttpResponse.json({ temporaryPassword: 'Rst77abcdefg' })),
+    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Reset password for Nina Nurse' }));
+    const before = gets;
+    const confirm = await screen.findByRole('dialog', { name: 'Reset password' });
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Reset password' }));
+    await screen.findByText('Rst77abcdefg');
+    await waitFor(() => expect(gets).toBeGreaterThan(before));
+  });
+
+  it('disables reset and deactivate on your own row', async () => {
+    setup([row({ id: 'a1', username: 'admin', fullName: 'Admin', role: 'ADMIN' })]);
+    expect(await screen.findByRole('button', { name: 'Reset password for Admin' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Deactivate Admin' })).toBeDisabled();
+  });
+
+  it('Escape does not dismiss the one-time temporary password dialog; Done does', async () => {
+    setup();
+    server.use(
+      http.post('*/api/v1/users/u1/reset-password', () => HttpResponse.json({ temporaryPassword: 'Rst77abcdefg' })),
+    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Reset password for Nina Nurse' }));
+    const confirm = await screen.findByRole('dialog', { name: 'Reset password' });
+    await userEvent.click(within(confirm).getByRole('button', { name: 'Reset password' }));
+    await screen.findByText('Rst77abcdefg');
+    await userEvent.keyboard('{Escape}');
+    expect(screen.getByText('Rst77abcdefg')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByText('Rst77abcdefg')).not.toBeInTheDocument();
+  });
+
+  it('editing with no changes sends no request and just closes', async () => {
+    let patched = 0;
+    setup();
+    server.use(
+      http.patch('*/api/v1/users/u1', () => {
+        patched++;
+        return HttpResponse.json(row({}));
+      }),
+    );
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit Nina Nurse' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Edit user' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Edit user' })).not.toBeInTheDocument());
+    expect(patched).toBe(0);
+  });
+
+  it('locks the role field when editing yourself', async () => {
+    setup([row({ id: 'a1', username: 'admin', fullName: 'Admin', role: 'ADMIN' })]);
+    await userEvent.click(await screen.findByRole('button', { name: 'Edit Admin' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Edit user' });
+    expect(within(dialog).getByLabelText('Role')).toBeDisabled();
+  });
+
+  it('keeps the previous page data (and page count) while the next page loads', async () => {
+    setup();
+    server.use(
+      http.get('*/api/v1/users', async ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get('page'));
+        if (page === 2) await delay(300);
+        return HttpResponse.json({ items: [row({ id: `p${page}`, fullName: `Person ${page}` })], page, pageSize: 25, total: 60 });
+      }),
+    );
+    expect(await screen.findByText('Page 1 of 3')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();
+    expect(screen.getByText('Person 1')).toBeInTheDocument();
+    expect(await screen.findByText('Person 2')).toBeInTheDocument();
   });
 });

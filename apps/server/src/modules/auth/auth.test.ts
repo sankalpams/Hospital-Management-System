@@ -97,6 +97,12 @@ describe('auth', () => {
     expect(await prisma.session.count()).toBe(0);
   });
 
+  it('POST /auth/login sets X-Session-Expires-At from the new session', async () => {
+    const res = await loginAs(agent());
+    expect(res.status).toBe(200);
+    expect(res.headers['x-session-expires-at']).toBe(at(15 * MIN).toISOString());
+  });
+
   it('GET /auth/me 401 without cookie', async () => {
     const res = await request(app).get('/api/v1/auth/me');
     expect(res.status).toBe(401);

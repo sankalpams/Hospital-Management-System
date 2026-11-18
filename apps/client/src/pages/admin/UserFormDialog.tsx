@@ -9,6 +9,7 @@ import { FormField } from '../../components/ui/FormField';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { useToast } from '../../components/ui/Toast';
+import { useAuth } from '../../auth/useAuth';
 import { roleLabel } from '../../layout/TopBar';
 import { api, ApiError } from '../../lib/api';
 
@@ -72,6 +73,8 @@ function UserForm({
   const isCreate = target === 'create';
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { user: me } = useAuth();
+  const isSelf = !isCreate && target.id === me?.id;
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
@@ -96,14 +99,16 @@ function UserForm({
       if (v.role !== target.role) payload.role = v.role;
       const email = (v.email ?? '').trim();
       if (email && email !== (target.email ?? '')) payload.email = email;
+      if (Object.keys(payload).length === 0) return null; // nothing changed: no request
       return api<UserRow>(`/users/${target.id}`, { method: 'PATCH', json: payload });
     },
     onSuccess: (res) => {
-      void queryClient.invalidateQueries({ queryKey: ['users'] });
+      if (res !== null) void queryClient.invalidateQueries({ queryKey: ['users'] });
       if (isCreate) {
         const created = res as { user: UserRow; temporaryPassword: string };
         onCreated(created.user, created.temporaryPassword);
-      } else {
+        mutation.reset(); // do not keep the one-time password in mutation state
+      } else if (res !== null) {
         toast('User updated', 'success');
       }
       onClose();
@@ -142,8 +147,13 @@ function UserForm({
       <FormField id="user-email" label="Email (optional)" error={errors.email?.message}>
         <Input type="email" autoComplete="off" {...register('email')} />
       </FormField>
-      <FormField id="user-role" label="Role" error={errors.role?.message}>
-        <Select {...register('role')}>
+      <FormField
+        id="user-role"
+        label="Role"
+        hint={isSelf ? 'You cannot change your own role.' : undefined}
+        error={errors.role?.message}
+      >
+        <Select disabled={isSelf} {...register('role')}>
           {ROLES.map((r) => (
             <option key={r} value={r}>
               {roleLabel(r)}
@@ -190,7 +200,8 @@ export function TemporaryPasswordDialog({
     onClose();
   };
   return (
-    <Dialog open={password !== null} title="Temporary password" onClose={close}>
+    // Escape is ignored on purpose: the password is shown once, only "Done" dismisses it.
+    <Dialog open={password !== null} title="Temporary password" onClose={() => undefined}>
       <p className="text-sm text-text">
         Share this temporary password with <strong>{username}</strong>. It is shown only once and must be changed at
         first sign-in.

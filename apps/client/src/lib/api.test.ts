@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { server } from '../test/server';
-import { api, ApiError, setApiHandlers } from './api';
+import { api, ApiError, serverNow, setApiHandlers, setServerOffset } from './api';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
@@ -75,5 +75,18 @@ describe('api() password change required', () => {
     );
     await api('/y').catch(() => undefined);
     expect(onPasswordChangeRequired).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('server clock offset', () => {
+  afterEach(() => setServerOffset(0));
+
+  it('derives the offset from the response Date header', async () => {
+    const serverTime = new Date(Date.now() + 3_600_000);
+    server.use(
+      http.get('*/api/v1/z', () => HttpResponse.json({}, { headers: { Date: serverTime.toUTCString() } })),
+    );
+    await api('/z');
+    expect(Math.abs(serverNow() - serverTime.getTime())).toBeLessThan(5000);
   });
 });

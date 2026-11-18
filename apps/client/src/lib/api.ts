@@ -22,6 +22,19 @@ export interface ApiHandlers {
 
 let handlers: ApiHandlers = {};
 
+// Server clock minus client clock, learned from the response Date header (1s resolution).
+let serverOffsetMs = 0;
+
+/** Current time on the server's clock, so expiry maths survives client clock skew. */
+export function serverNow(): number {
+  return Date.now() + serverOffsetMs;
+}
+
+/** Overrides the learned offset (tests, or resetting to 0). */
+export function setServerOffset(ms: number): void {
+  serverOffsetMs = ms;
+}
+
 /** Registers global reactions (AuthProvider owns these). Replaces any previous registration. */
 export function setApiHandlers(next: ApiHandlers): void {
   handlers = next;
@@ -43,6 +56,12 @@ export async function api<T = void>(path: string, init: ApiInit = {}): Promise<T
     headers: finalHeaders,
     credentials: 'include',
   });
+
+  const dateHeader = res.headers.get('Date');
+  if (dateHeader) {
+    const serverTime = new Date(dateHeader).getTime();
+    if (!Number.isNaN(serverTime)) serverOffsetMs = serverTime - Date.now();
+  }
 
   const expires = res.headers.get('X-Session-Expires-At');
   if (expires) {

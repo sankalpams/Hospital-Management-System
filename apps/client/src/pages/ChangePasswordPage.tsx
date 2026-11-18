@@ -58,9 +58,10 @@ export function ChangePasswordPage() {
   const onLogout = async () => {
     try {
       await logout();
-    } finally {
-      navigate('/login', { replace: true });
+    } catch {
+      /* the session is cleared client-side regardless */
     }
+    navigate('/login', { replace: true });
   };
 
   return (

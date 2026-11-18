@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ROLES } from '@hms/shared';
 import { useAuth } from '../../auth/useAuth';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -47,6 +47,7 @@ export function UsersPage() {
 
   const query = useQuery({
     queryKey: ['users', { search: debouncedSearch, role, page }],
+    placeholderData: keepPreviousData,
     queryFn: () => {
       const p = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
       if (debouncedSearch) p.set('search', debouncedSearch);
@@ -72,7 +73,10 @@ export function UsersPage() {
 
   const reset = useMutation({
     mutationFn: (u: UserRow) => api<{ temporaryPassword: string }>(`/users/${u.id}/reset-password`, { method: 'POST' }),
-    onSuccess: (res, u) => setTempPassword({ password: res.temporaryPassword, username: u.username }),
+    onSuccess: (res, u) => {
+      setTempPassword({ password: res.temporaryPassword, username: u.username });
+      void queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
     onError,
     onSettled: () => setConfirm(null),
   });
@@ -107,6 +111,8 @@ export function UsersPage() {
           <Button
             variant="secondary"
             aria-label={`Reset password for ${u.fullName}`}
+            disabled={u.id === me?.id}
+            title={u.id === me?.id ? 'Use Change password in the user menu for your own account' : undefined}
             onClick={() => setConfirm({ kind: 'reset', user: u })}
           >
             Reset password
@@ -235,7 +241,10 @@ export function UsersPage() {
       <TemporaryPasswordDialog
         password={tempPassword?.password ?? null}
         username={tempPassword?.username ?? ''}
-        onClose={() => setTempPassword(null)}
+        onClose={() => {
+          setTempPassword(null);
+          reset.reset(); // drop the one-time password from mutation state
+        }}
       />
     </div>
   );

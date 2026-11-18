@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { serverNow } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
 import { useAuth } from './useAuth';
 
 export const WARNING_SECONDS = 60;
 
-const secondsLeft = (expiresAt: Date) => Math.ceil((expiresAt.getTime() - Date.now()) / 1000);
+const secondsLeft = (expiresAt: Date) => Math.ceil((expiresAt.getTime() - serverNow()) / 1000);
 
 /**
  * Warns when 60s or less remain on the session, counts down live, and signs the user out at 0.
@@ -15,13 +16,18 @@ const secondsLeft = (expiresAt: Date) => Math.ceil((expiresAt.getTime() - Date.n
 export function SessionTimeoutWarning() {
   const { expiresAt, logout, refresh } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromRef = useRef('');
+  fromRef.current = `${location.pathname}${location.search}${location.hash}`;
   const [remaining, setRemaining] = useState<number | null>(null);
   const [staying, setStaying] = useState(false);
   const expiredRef = useRef(false);
   const logoutRef = useRef(logout);
+  const refreshRef = useRef(refresh);
   const navigateRef = useRef(navigate);
   useEffect(() => {
     logoutRef.current = logout;
+    refreshRef.current = refresh;
     navigateRef.current = navigate;
   });
 
@@ -29,6 +35,20 @@ export function SessionTimeoutWarning() {
   useEffect(() => {
     expiredRef.current = false;
   }, [expiresAt]);
+
+  // The cached expiry may be stale (another tab kept the session alive), so verify before logging out.
+  const expire = async () => {
+    const next = await refreshRef.current().catch(() => null);
+    if (next && next.getTime() > serverNow()) return; // still alive; the new expiresAt re-arms the timer
+    try {
+      await logoutRef.current({ reason: 'timeout' });
+    } catch {
+      /* cleared client-side regardless */
+    }
+    navigateRef.current('/login?reason=timeout', { replace: true, state: { from: fromRef.current } });
+  };
+  const expireRef = useRef(expire);
+  expireRef.current = expire;
 
   useEffect(() => {
     if (!expiresAt) {
@@ -40,10 +60,7 @@ export function SessionTimeoutWarning() {
       setRemaining(left);
       if (left <= 0 && !expiredRef.current) {
         expiredRef.current = true;
-        void logoutRef
-          .current()
-          .catch(() => undefined)
-          .finally(() => navigateRef.current('/login?reason=timeout', { replace: true }));
+        void expireRef.current();
       }
     };
     tick();
