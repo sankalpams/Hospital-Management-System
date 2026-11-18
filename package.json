@@ -10,15 +10,18 @@
   "scripts": {
     "dev": "concurrently -n server,client -c blue,green \"npm run dev -w @hms/server\" \"npm run dev -w @hms/client\"",
     "test": "npm test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",
     "db:migrate": "npm run db:migrate -w @hms/server",
     "db:reset": "npm run db:reset -w @hms/server",
-    "db:seed": "npm run db:seed -w @hms/server"
+    "db:seed": "npm run db:seed -w @hms/server",
+    "db:e2e-prepare": "npm run db:e2e-prepare -w @hms/server",
+    "e2e": "playwright test"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@playwright/test": "^1.65.1",
     "@types/node": "^22.20.5",
     "concurrently": "^9.1.0",
     "eslint": "^9.15.0",

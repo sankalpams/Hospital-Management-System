@@ -33,6 +33,6 @@ describe('assertSeedAllowed', () => {
       assertSeedAllowed({ NODE_ENV: 'production', SEED_ALLOW_PRODUCTION: '1' }, warn),
     ).not.toThrow();
     expect(warn).toHaveBeenCalledOnce();
-    expect(String(warn.mock.calls[0][0])).toMatch(/WARNING/);
+    expect(String(warn.mock.calls[0]?.[0])).toMatch(/WARNING/);
   });
 });
