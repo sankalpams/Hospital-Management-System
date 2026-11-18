@@ -109,7 +109,7 @@ pass it, recording the change here.
 | `--color-text` | `#0F172A` | `#E2E8F0` |
 | `--color-muted` | `#475569` | `#94A3B8` |
 | `--color-border` | `#E2E8F0` | `#1E293B` |
-| `--color-border-strong` *(new)* | `#CBD5E1` | `#334155` |
+| `--color-border-strong` *(new)* | `#64748B` | `#64748B` |
 | `--color-bg` | `#F8FAFC` | `#020617` |
 | `--color-surface` | `#FFFFFF` | `#0F172A` |
 | `--color-surface-raised` *(new; menus, dialogs)* | `#FFFFFF` | `#1E293B` |

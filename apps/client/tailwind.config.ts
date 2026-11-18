@@ -1,8 +1,9 @@
 import type { Config } from 'tailwindcss';
 
-// All values resolve to CSS variables from src/styles/tokens.css (design spec 8.2).
+// All values resolve to CSS variables from src/styles/tokens.css (design spec 5.2).
 // Spacing keeps Tailwind's default 4px scale.
 export default {
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     colors: {
@@ -11,26 +12,41 @@ export default {
       primary: 'var(--color-primary)',
       'primary-hover': 'var(--color-primary-hover)',
       'primary-subtle': 'var(--color-primary-subtle)',
-      'on-primary': 'var(--color-surface)',
+      'on-primary': 'var(--color-on-primary)',
       text: 'var(--color-text)',
       muted: 'var(--color-muted)',
       border: 'var(--color-border)',
+      'border-strong': 'var(--color-border-strong)',
       bg: 'var(--color-bg)',
       surface: 'var(--color-surface)',
+      'surface-raised': 'var(--color-surface-raised)',
+      'surface-sunken': 'var(--color-surface-sunken)',
       success: 'var(--color-success)',
+      'success-subtle': 'var(--color-success-subtle)',
       warning: 'var(--color-warning)',
+      'warning-subtle': 'var(--color-warning-subtle)',
       danger: 'var(--color-danger)',
+      'danger-subtle': 'var(--color-danger-subtle)',
       info: 'var(--color-info)',
+      'info-subtle': 'var(--color-info-subtle)',
       overlay: 'var(--color-overlay)',
+      'chart-1': 'var(--color-chart-1)',
+      'chart-2': 'var(--color-chart-2)',
+      'chart-3': 'var(--color-chart-3)',
+      'chart-4': 'var(--color-chart-4)',
+      'chart-5': 'var(--color-chart-5)',
+      'chart-6': 'var(--color-chart-6)',
     },
     borderRadius: {
       none: '0',
       control: 'var(--radius-control)',
       card: 'var(--radius-card)',
+      pill: 'var(--radius-pill)',
       full: '9999px',
     },
     boxShadow: {
       card: 'var(--shadow-card)',
+      raised: 'var(--shadow-raised)',
       overlay: 'var(--shadow-overlay)',
       none: 'none',
     },
@@ -43,8 +59,16 @@ export default {
       xl: ['20px', { lineHeight: '1.4' }],
       '2xl': ['24px', { lineHeight: '1.3' }],
       '3xl': ['30px', { lineHeight: '1.2' }],
+      '4xl': ['36px', { lineHeight: '1.1' }],
     },
-    extend: {},
+    extend: {
+      transitionDuration: {
+        fast: 'var(--duration-fast)',
+        base: 'var(--duration-base)',
+        slow: 'var(--duration-slow)',
+      },
+      transitionTimingFunction: { 'out-soft': 'var(--ease-out)' },
+    },
   },
   plugins: [],
 } satisfies Config;
