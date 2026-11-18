@@ -29,8 +29,10 @@ the invoice). No placeholder screens.
 - One-command local setup with seeded demo data and one demo login per role.
 
 **Non-goals** (spec §12 "Future Enhancements" and anything production-only)
-- Mobile app, patient portal, SMS/email, telemedicine, insurance, AI decision support,
-  biometrics, cloud deployment.
+- Mobile app, email, telemedicine, insurance, AI decision support, biometrics, cloud
+  deployment. *(Amended 2026-11-18: patient portal and SMS moved into scope — see §7.12,
+  §7.13. Real SMS delivery is optional: the default `log` provider only records messages;
+  Notify.lk/Twilio are enabled by env when the user has accounts.)*
 - Real regulatory compliance (HIPAA etc.), real payment gateway, multi-hospital/multi-branch.
 - True high availability (clustering/failover). Documented as a deployment note only.
 
@@ -115,12 +117,21 @@ repository, and tests. Controllers never touch Prisma; services never touch `req
 - Password management: change own password (requires current), admin reset (forces change on
   next login), policy min 8 chars with letter + digit. 5 failed logins → 15 min lockout.
 - Logout invalidates the session row.
+- **Staff self sign-up** *(added 2026-11-18)*: public `/signup` form (username, full name,
+  email, phone, requested role — never ADMIN or PATIENT —, password). Creates a user with
+  status `PENDING` who cannot log in until an admin approves (confirming the role) or rejects
+  (with a reason). Admins get an in-app alert. Audited: `SIGNUP_REQUESTED`, `SIGNUP_APPROVED`,
+  `SIGNUP_REJECTED`.
 
 ### 6.2 Roles & access control
 Roles are rows in `roles` (seeded, fixed set of 7). Permissions are string constants in
 `packages/shared` (e.g. `patient:create`, `billing:payment:record`) mapped to roles in code;
 the server enforces them on every route, the client uses the same map only to hide UI.
 A user has exactly one role.
+*(Added 2026-11-18)* An 8th role, **PATIENT**, is portal-only (§7.12). A patient user is linked
+1:1 to a patient record and can only read/update their own data. Reception or Admin creates it
+from the patient profile ("Create portal login" → temporary password, forced change). It is
+never offered in self sign-up and has no access to any staff area in the table below.
 *(Builder's call)* Doctors can view any patient's full record, for continuity of care. Every
 such view is audited (`VIEW_EMR`). Doctors can only create or edit encounters they own.
 "Own patients" in reports means patients the doctor has had an encounter with.
@@ -287,6 +298,27 @@ Other roles see their work queue first (doctor: today's patients; lab: pending s
 pharmacist: pending prescriptions + alerts; reception: today's appointments; accountant:
 unpaid invoices; nurse: admitted patients + vitals due).
 
+### 7.12 Patient portal *(added 2026-11-18)*
+Portal home for PATIENT users, without the staff sidebar: My details (view; edit phone, email,
+address, emergency contact — audited), My appointments (upcoming/past; request cancellation),
+My lab reports (verified only, printable), My prescriptions, My invoices & payments
+(read-only). Every portal read of clinical data is audited as `VIEW_EMR` by self.
+
+### 7.13 Notifications *(added 2026-11-18)*
+- **In-app staff alerts:** `staff_alerts` (recipient user or role, type, title, body, link,
+  readAt). Bell in the top bar with unread count, polled every 30 s; dropdown with
+  "mark all read". Raised by: new sign-up request (admin), lab result ready and urgent result
+  (ordering doctor), low stock / near expiry (pharmacist), new appointment booked (doctor).
+- **Patient SMS:** `sms_messages` log (patient, phone, template, body, status, provider id,
+  error, sentAt). `SmsProvider` interface with `log` (default, records only), `notifylk` and
+  `twilio`, chosen by `SMS_PROVIDER`. Triggers: appointment booked / rescheduled / cancelled,
+  reminder the day before at `reminderHour` (default 18:00, node-cron), lab report ready.
+  Admin SMS screen: log with filters, resend failed, one-off message to a patient. Patients
+  without a phone or with the SMS opt-out flag are skipped.
+- Settings additions: `smsEnabled`, `reminderHour`.
+- Slices 3, 5 and 6 emit domain events (appointment booked/changed, lab result ready,
+  stock low/expiring) through a small event helper, so slice 13 only adds subscribers.
+
 ## 8. UI
 
 ### 8.1 Screens
@@ -297,6 +329,8 @@ workspace); Lab (worklist, result entry, report); Pharmacy (inventory, batches, 
 alerts); IPD (bed board, admit, discharge); Billing (charges, invoices, payment, receipt);
 Staff (employees, attendance, leave); Reports; Admin (users, settings, audit log);
 My profile / change password. Responsive down to tablet width; usable on phone for lookups.
+*(Added 2026-11-18)* Sign-up page; Admin → Sign-up requests; Admin → SMS; notification bell;
+patient portal pages (§7.12).
 
 ### 8.2 Design tokens (authoritative — ui-ux-pro-max must not override)
 Defined once as CSS variables in `apps/client/src/styles/tokens.css`, consumed by Tailwind config.
@@ -330,6 +364,13 @@ Each slice = its own branch, plan → TDD build → code review → verification
 9. Staff attendance & leave.
 10. Reports & role dashboards.
 11. Backup/recovery, hardening, full E2E suite, docs (README, user guide, architecture notes).
+12. *(Added 2026-11-18)* Staff sign-up approvals + patient portal (PATIENT role, portal pages,
+    portal-login creation).
+13. *(Added 2026-11-18)* Notifications: staff alert bell + patient SMS (providers, reminder
+    cron, admin SMS screen), subscribed to the slice 3/5/6 events.
+
+Seed additions for slices 12–13: 2–3 portal logins for sample patients (`patient1`…), a few
+pending sign-up requests, sample alerts and SMS log rows (log provider).
 
 ## 10. Backup & recovery (spec §10)
 - `scripts/backup.ts` runs `pg_dump` inside the Postgres container; node-cron in the server
