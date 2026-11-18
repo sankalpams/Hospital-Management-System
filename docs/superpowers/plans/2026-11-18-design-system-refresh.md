@@ -189,7 +189,7 @@ Test: `apps/client/src/styles/font.test.ts`.
 - [ ] **Step 1: Failing test.** Read `tokens.css` and `main.tsx` from disk:
   - `--font-sans` starts with `'Poppins'`;
   - `main.tsx` imports the four Poppins weight files;
-  - nothing under `apps/client/src` matches `/inter(-variable)?|Inter Variable|'Inter'/i` (so words like "Interface" don't count), except this test file.
+  - nothing under `apps/client/src` matches `/\binter(-variable)?\b|Inter Variable|'Inter'/i` (so words like "Interface" don't count), except this test file.
 - [ ] **Step 2–4:** FAIL → implement → PASS.
 - [ ] **Step 4b (numerals):** check whether Poppins supports `font-variant-numeric: tabular-nums`
   (the `tnum` feature in the shipped woff2: inspect the font's GSUB features with a short Node
