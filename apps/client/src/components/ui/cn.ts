@@ -13,6 +13,8 @@ const twMerge = extendTailwindMerge({
   extend: {
     theme: { color: COLORS, radius: ['control', 'card', 'pill'], shadow: ['card', 'raised', 'overlay'] },
     classGroups: {
+      duration: [{ duration: ['fast', 'base', 'slow'] }],
+      ease: [{ ease: ['out-soft'] }],
       'font-size': [{ text: ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl'] }],
     },
   },

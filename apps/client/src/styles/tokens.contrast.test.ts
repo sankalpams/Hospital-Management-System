@@ -34,9 +34,13 @@ describe('parseThemeTokens', () => {
 
 describe.each([['light', light], ['dark', dark]] as const)('%s theme contrast', (_name, t) => {
   it.each(TEXT_PAIRS)('text %s on %s >= 4.5', (fg, bg) => {
+    expect(t[`--color-${fg}`], `--color-${fg}`).toBeDefined();
+    expect(t[`--color-${bg}`], `--color-${bg}`).toBeDefined();
     expect(contrastRatio(t[`--color-${fg}`]!, t[`--color-${bg}`]!)).toBeGreaterThanOrEqual(4.5);
   });
   it.each(UI_PAIRS)('ui %s on %s >= 3', (fg, bg) => {
+    expect(t[`--color-${fg}`], `--color-${fg}`).toBeDefined();
+    expect(t[`--color-${bg}`], `--color-${bg}`).toBeDefined();
     expect(contrastRatio(t[`--color-${fg}`]!, t[`--color-${bg}`]!)).toBeGreaterThanOrEqual(3);
   });
 });
