@@ -3,22 +3,25 @@ import request from 'supertest';
 import type { RoleName } from '@prisma/client';
 import { prisma } from '../src/db.js';
 import { createApp } from '../src/app.js';
+import { seedRoles } from '../prisma/seed/modules/core.js';
 import { hashPassword } from '../src/modules/auth/password.js';
 
-/** Truncate every table except Prisma's migration bookkeeping. */
+/** Truncate every table except Prisma's migration bookkeeping, then re-seed the role rows. */
 export async function resetDb(): Promise<void> {
   const rows = await prisma.$queryRaw<{ tablename: string }[]>`
     SELECT tablename FROM pg_tables
     WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'`;
-  if (rows.length === 0) return;
-  const list = rows.map((r) => `"public"."${r.tablename}"`).join(', ');
-  await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${list} RESTART IDENTITY CASCADE`);
+  if (rows.length > 0) {
+    const list = rows.map((r) => `"public"."${r.tablename}"`).join(', ');
+    await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${list} RESTART IDENTITY CASCADE`);
+  }
+  await seedRoles(prisma);
 }
 
 /** App with the login rate limiter disabled (ruling R2). */
 export const testApp = () => createApp({ loginRateLimit: false });
 
-/** Test fixture: creates a user (and upserts its Role row). Task 7 builds the real seed. */
+/** Test fixture: creates a user. Role rows come from resetDb (seedRoles). */
 export async function createUser(opts: {
   role?: RoleName;
   username: string;
@@ -28,11 +31,7 @@ export async function createUser(opts: {
   mustChangePassword?: boolean;
 }) {
   const role = opts.role ?? 'ADMIN';
-  const roleRow = await prisma.role.upsert({
-    where: { name: role },
-    update: {},
-    create: { name: role, description: role },
-  });
+  const roleRow = await prisma.role.findUniqueOrThrow({ where: { name: role } });
   return prisma.user.create({
     data: {
       username: opts.username,

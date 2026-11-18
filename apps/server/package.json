@@ -7,12 +7,16 @@
     "dev": "tsx watch src/server.ts",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "db:migrate": "dotenv -e ../../.env -- prisma migrate dev",
-    "db:reset": "echo \"db:reset: not implemented until Task 3\"",
-    "db:seed": "echo \"db:seed: not implemented until Task 7\"",
+    "db:migrate": "dotenv run -f ../../.env -- prisma migrate dev",
+    "db:reset": "dotenv run -f ../../.env -- prisma migrate reset --force",
+    "db:seed": "dotenv run -f ../../.env -- prisma db seed",
     "db:generate": "prisma generate"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed/index.ts"
+  },
   "dependencies": {
+    "@faker-js/faker": "^10.6.0",
     "@hms/shared": "*",
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
