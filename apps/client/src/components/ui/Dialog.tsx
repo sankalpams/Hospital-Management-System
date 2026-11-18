@@ -13,13 +13,17 @@ const FOCUSABLE =
 /** Modal dialog: focus moves in on open, Tab is trapped, Escape closes, focus returns to the opener. */
 export function Dialog({ open, title, onClose, children }: DialogProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
   useEffect(() => {
     if (!open) return;
     const opener = document.activeElement as HTMLElement | null;
     const node = ref.current;
     (node?.querySelector<HTMLElement>(FOCUSABLE) ?? node)?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
       if (e.key === 'Tab' && node) {
         const items = [...node.querySelectorAll<HTMLElement>(FOCUSABLE)];
         const first = items[0];
@@ -39,7 +43,7 @@ export function Dialog({ open, title, onClose, children }: DialogProps) {
       document.removeEventListener('keydown', onKey);
       opener?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4">

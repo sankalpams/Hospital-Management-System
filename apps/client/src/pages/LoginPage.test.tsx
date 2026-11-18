@@ -91,4 +91,25 @@ describe('LoginPage', () => {
     await submit('admin', 'Password1!');
     await waitFor(() => expect(screen.getByText('HOME PAGE')).toBeInTheDocument());
   });
+
+  it('shows the server message for 4xx such as an inactive account', async () => {
+    server.use(
+      http.post('*/api/v1/auth/login', () =>
+        HttpResponse.json(
+          { error: { code: 'ACCOUNT_INACTIVE', message: 'This account is inactive' } },
+          { status: 403 },
+        ),
+      ),
+    );
+    setup();
+    await submit('nurse', 'x');
+    expect(await screen.findByRole('alert')).toHaveTextContent('This account is inactive');
+  });
+
+  it('shows a generic message on a network error', async () => {
+    server.use(http.post('*/api/v1/auth/login', () => HttpResponse.error()));
+    setup();
+    await submit('nurse', 'x');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Please try again.');
+  });
 });

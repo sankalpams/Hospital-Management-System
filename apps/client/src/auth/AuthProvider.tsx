@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { can as roleCan, type Permission } from '@hms/shared';
 import { api, ApiError, setApiHandlers } from '../lib/api';
 import { AuthContext, type AuthContextValue, type AuthUser } from './AuthContext';
@@ -12,17 +13,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setApiHandlers({
       onUnauthenticated: () => {
         setUser(null);
         setExpiresAt(null);
+        queryClient.clear();
       },
       onSessionExpiry: setExpiresAt,
     });
     return () => setApiHandlers({});
-  }, []);
+  }, [queryClient]);
 
   const refresh = useCallback(async () => {
     try {
@@ -60,8 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null);
       setExpiresAt(null);
+      queryClient.clear();
     }
-  }, []);
+  }, [queryClient]);
 
   const can = useCallback((perm: Permission) => (user ? roleCan(user.role, perm) : false), [user]);
 

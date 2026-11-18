@@ -37,7 +37,7 @@ export function Button({
       )}
       {...rest}
     >
-      {loading && <Spinner label="" />}
+      {loading && <Spinner label="" decorative />}
       {children}
     </button>
   );

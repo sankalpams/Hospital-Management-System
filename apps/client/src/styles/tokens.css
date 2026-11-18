@@ -20,7 +20,7 @@
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.1);
   --shadow-overlay: 0 10px 30px rgb(15 23 42 / 0.2);
 
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-size-body: 14px;
   --line-height-body: 1.5;
 

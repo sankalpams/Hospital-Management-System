@@ -44,8 +44,13 @@ export function TopBar({ onOpenMenu, menuOpen }: { onOpenMenu: () => void; menuO
 
   const onLogout = async () => {
     setOpen(false);
-    await logout();
-    navigate('/login', { replace: true });
+    try {
+      await logout();
+    } catch {
+      /* session is cleared client-side regardless; still leave the app */
+    } finally {
+      navigate('/login', { replace: true });
+    }
   };
 
   return (

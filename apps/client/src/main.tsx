@@ -6,6 +6,7 @@ import { App } from './App';
 import { AuthProvider } from './auth/AuthProvider';
 import { ToastProvider } from './components/ui/Toast';
 import { queryClient } from './lib/queryClient';
+import '@fontsource-variable/inter';
 import './styles/global.css';
 
 const root = document.getElementById('root');

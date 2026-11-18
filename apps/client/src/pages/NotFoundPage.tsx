@@ -3,7 +3,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 
 export function NotFoundPage() {
   return (
-    <main className="flex min-h-[60vh] items-center justify-center p-4">
+    <div className="flex min-h-[60vh] items-center justify-center p-4">
       <EmptyState
         title="Page not found"
         description="The page you are looking for does not exist."
@@ -13,6 +13,6 @@ export function NotFoundPage() {
           </Link>
         }
       />
-    </main>
+    </div>
   );
 }

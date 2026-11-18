@@ -1,6 +1,12 @@
-export function Spinner({ label = 'Loading' }: { label?: string }) {
+export function Spinner({
+  label = 'Loading',
+  decorative = false,
+}: {
+  label?: string;
+  decorative?: boolean;
+}) {
   return (
-    <span role="status" className="inline-flex items-center gap-2 text-muted">
+    <span role={decorative ? undefined : 'status'} className="inline-flex items-center gap-2 text-muted">
       <svg
         className="h-5 w-5 animate-spin text-primary"
         viewBox="0 0 24 24"

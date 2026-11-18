@@ -100,6 +100,10 @@ repository, and tests. Controllers never touch Prisma; services never touch `req
 - **Printing/exports:** print-optimised HTML pages + `window.print()` for receipts, invoices,
   lab reports, prescriptions; CSV export for all reports. (No server-side PDF generation.)
 
+> **Amendment (2026-11-18):** the client uses React 19 rather than 18. Dialog and menu primitives
+> are hand-rolled for now (Radix is not yet adopted). Forms from Task 9 onward use React Hook Form
+> with the zod resolver and the shared schemas.
+
 ## 6. Cross-cutting concerns
 
 ### 6.1 Authentication & sessions

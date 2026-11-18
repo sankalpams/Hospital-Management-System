@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { FormField } from '../components/ui/FormField';
 import { Input } from '../components/ui/Input';
+import { Spinner } from '../components/ui/Spinner';
 import { ApiError } from '../lib/api';
 
 interface FieldErrors {
@@ -24,7 +25,14 @@ export function LoginPage() {
   const passRef = useRef<HTMLInputElement>(null);
 
   const from = (location.state as { from?: string } | null)?.from ?? '/';
-  if (!loading && user) return <Navigate to={from} replace />;
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-bg">
+        <Spinner label="Loading" />
+      </main>
+    );
+  }
+  if (user) return <Navigate to={from} replace />;
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -40,7 +48,7 @@ export function LoginPage() {
     try {
       await login(username.trim(), password);
     } catch (err) {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 423 || err.status === 429)) {
+      if (err instanceof ApiError && err.status < 500) {
         setFormError(err.message);
       } else {
         setFormError('Something went wrong. Please try again.');

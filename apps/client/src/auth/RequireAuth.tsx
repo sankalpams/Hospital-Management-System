@@ -14,6 +14,6 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     );
   }
   // TODO(Task 9): when user.mustChangePassword, route to the change-password screen.
-  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (!user) return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;
   return <>{children}</>;
 }
