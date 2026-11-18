@@ -360,6 +360,68 @@ strip the param). Test `apps/client/src/commands/CommandPalette.test.tsx`.
 - [ ] **Step 2–4:** FAIL → implement → PASS.
 - [ ] **Step 5: Commit** `feat(settings,public): website settings and public hospital endpoint`.
 
+### Task 9A: 1,000 staff accounts with 90 days of audit history (seed) *(added 2026-11-18)*
+
+The user asked for 1,000 dummy records. The only data the system holds today is staff accounts,
+settings and the audit log, so this fills those. The dashboard (Task 11), Users and Audit pages
+then show a busy hospital.
+
+**Files:**
+- Create: `apps/server/prisma/seed/data/names.ts` (Sinhala, Tamil and Muslim given names and
+  surnames, at least 60 each family. Spec §11 says these lists live in `data/`.)
+- Create: `apps/server/prisma/seed/modules/staff.ts`; Modify: `apps/server/prisma/seed/index.ts`
+  (register after `core`)
+- Test: `apps/server/prisma/seed/staff.test.ts`
+
+**Interfaces:**
+- Consumes `SeedModule`, `ctx.prisma`, `ctx.faker` (seeded 20261117), `ctx.scale`, `DEMO_USERS`,
+  `DEMO_PASSWORD` and `hashPassword` from `core.ts` / the auth module.
+- Produces `staffModule: SeedModule` (name `'staff'`) and
+  `STAFF_TOTALS: Record<SeedScale, Record<RoleName, number>>`. Both include the 7 demo users:
+  - `large`: ADMIN 15, DOCTOR 200, NURSE 450, RECEPTIONIST 100, LAB_STAFF 100, PHARMACIST 80,
+    ACCOUNTANT 55 (= 1,000)
+  - `small`: ADMIN 2, DOCTOR 4, NURSE 6, RECEPTIONIST 2, LAB_STAFF 2, PHARMACIST 2,
+    ACCOUNTANT 2 (= 20)
+
+**Rules:**
+- Names: mix the three name families roughly 70 / 20 / 10. Doctors are "Dr. " + name.
+- Usernames are deterministic, `firstname.lastname` lower-case ASCII. On a clash, add a numeric
+  suffix (`.2`, `.3`). They must never clash with the 7 demo usernames.
+- Password `Password1!`, hashed once and reused.
+- About 5% are `isActive: false` and about 2% are `mustChangePassword: true`. Neither applies to
+  demo users.
+- Upsert by username, so a re-run creates no duplicates. A re-run doesn't touch existing
+  non-demo users' passwords.
+- Audit history covers the 90 Colombo days before today, generated from `ctx.faker`:
+  - Active users get a `LOGIN` on most weekdays (doctors and nurses on weekends too), each
+    followed by a `LOGOUT` 4–10 h later when the time is still in the past.
+  - About 3% of login attempts are `LOGIN_FAILED` with `userId` null where the user is unknown
+    (match how `auth.service.ts` records it).
+  - Admins add a few `CREATE` and `UPDATE` entries on entity `User`.
+  - Times fall in plausible Colombo shift hours. `ip` values come from private ranges.
+  - Rows go in through `createMany` batches of 5,000 with deterministic ids
+    `seed-audit-<7-digit n>` and `skipDuplicates: true`, so a re-run adds nothing.
+  - Large scale yields about 50k–80k rows; small yields about 300.
+- Large-scale seeding of this module finishes in under 60 s locally. Log the counts.
+- The seed's production guard is unchanged.
+
+- [ ] **Step 1: Failing tests** (run the module with `scale: 'small'` against the test DB after
+  `resetDb`):
+  - The user count per role equals `STAFF_TOTALS.small`, and the 7 demo usernames are present.
+  - All usernames are unique and match `/^[a-z]+(\.[a-z]+)+(\.\d+)?$/`, or are a demo username.
+  - At least one inactive non-demo user exists at small scale (force at least one).
+  - The audit rows' `createdAt` all fall within the last 90 Colombo days and none are in the
+    future. `LOGIN` > 0 and `LOGIN_FAILED` > 0.
+  - Running the module twice leaves user and audit counts unchanged.
+  - Two runs on fresh DBs produce identical usernames (determinism).
+  - `STAFF_TOTALS.large` sums to 1000, as a pure assertion that doesn't seed large in tests.
+- [ ] **Step 2–4:** FAIL → implement → PASS (`npm test -w @hms/server -- staff seed`).
+- [ ] **Step 5:** Run `npm run db:seed` once against the **dev** DB, which is idempotent and not a
+  reset. Record the time taken and the counts in the report. Do not run `db:reset`.
+- [ ] **Step 6:** README: the demo section gains one line: "The seed also creates 1,000 staff
+  accounts (all roles) with 90 days of activity; they share the demo password."
+- [ ] **Step 7: Commit** `feat(seed): 1,000 staff accounts with 90 days of audit history`.
+
 ### Task 10: Public hospital website at `/` and route move to `/dashboard`
 
 **Files:**

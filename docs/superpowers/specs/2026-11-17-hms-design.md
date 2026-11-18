@@ -413,6 +413,7 @@ seed module.
 | Departments | ~12 |
 | Doctors | ~45 |
 | Other staff | ~150 |
+| Staff user accounts *(added 2026-11-18 at the user's request)* | 1,000 across all 7 roles, incl. the 7 demo logins, with ~90 days of audit history (logins, failed logins, logouts, user edits). Later slices link doctor/employee records to these accounts. |
 | Patients | ~3,000 |
 | Appointments | ~30,000 (12 months of history + 3 weeks ahead) |
 | Encounters | ~22,000 |
