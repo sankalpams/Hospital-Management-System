@@ -337,7 +337,7 @@ Defined once as CSS variables in `apps/client/src/styles/tokens.css`, consumed b
 - Colour: primary teal `#0F766E` (hover `#115E59`, subtle `#CCFBF1`); neutral slate scale
   (`#0F172A` text, `#475569` muted, `#E2E8F0` border, `#F8FAFC` app background, `#FFFFFF` surface);
   success `#15803D`, warning `#B45309`, danger `#B91C1C`, info `#1D4ED8`. Status badges use these.
-- Type: Inter (fallback system-ui); sizes 12/14/16/18/20/24/30; body 14, line-height 1.5.
+- Type: Poppins (fallback system-ui; changed 2026-11-18, see 2026-11-18-design-system-refresh-design.md §5.2); sizes 12/14/16/18/20/24/30; body 14, line-height 1.5.
 - Spacing: 4 px scale (4, 8, 12, 16, 24, 32, 48). Radius: 6 (controls), 10 (cards).
 - Shadow: one card shadow, one overlay shadow. Focus ring: 2 px primary, 2 px offset.
 - Light theme only.

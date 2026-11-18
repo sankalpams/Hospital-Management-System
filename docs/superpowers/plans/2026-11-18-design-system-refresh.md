@@ -175,6 +175,33 @@ test it there: picking "Dark" sets `data-theme="dark"`.)*
   and fix what fails.
 - [ ] **Step 6: Commit** `feat(client): radix-based component kit on design tokens`.
 
+### Task 3A: Poppins as the system font *(added 2026-11-18)*
+
+The user asked for Poppins throughout. It replaces Inter (spec §5.2 is updated).
+
+**Files:** Modify `apps/client/package.json` (add `@fontsource/poppins` pinned exactly; remove
+`@fontsource-variable/inter`), `apps/client/src/main.tsx` (import
+`@fontsource/poppins/latin-400.css`, `latin-500.css`, `latin-600.css` and `latin-700.css`, and
+delete the Inter import), `apps/client/src/styles/tokens.css` (`--font-sans: 'Poppins', system-ui,
+-apple-system, 'Segoe UI', sans-serif;`). Add `--font-numeric` only if Step 3 requires it.
+Test: `apps/client/src/styles/font.test.ts`.
+
+- [ ] **Step 1: Failing test.** Read `tokens.css` and `main.tsx` from disk:
+  - `--font-sans` starts with `'Poppins'`;
+  - `main.tsx` imports the four Poppins weight files;
+  - nothing under `apps/client/src` matches `/binter(-variable)?b|Inter Variable|'Inter'/i` (so words like "Interface" don't count), except this test file.
+- [ ] **Step 2–4:** FAIL → implement → PASS.
+- [ ] **Step 4b (numerals):** check whether Poppins supports `font-variant-numeric: tabular-nums`
+  (the `tnum` feature in the shipped woff2: inspect the font's GSUB features with a short Node
+  script using the `fontkit` package in the scratch area, without adding it to the project).
+  - If it has `tnum`: done.
+  - If not: add `--font-numeric: ui-monospace, 'Segoe UI', system-ui, sans-serif`, plus a Tailwind
+    `font-numeric` family. Record in the spec §5.2 that tables and stat figures (Tasks 4, 5 and 11)
+    use `font-numeric tabular-nums`, so digits align.
+  - Report which case applied.
+- [ ] **Step 5:** Gates: lint, typecheck, `npm test` green.
+- [ ] **Step 6: Commit** `feat(client): Poppins as the system font`.
+
 ### Task 4: DataTable upgrade (sort, density, sticky header)
 
 **Files:** Modify `apps/client/src/components/DataTable.tsx`, `apps/client/src/components/ui/Table.tsx`,

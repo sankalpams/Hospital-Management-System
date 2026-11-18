@@ -81,7 +81,7 @@ Radix primitives. Its source URL goes in a header comment.
 
 ui-ux-pro-max recommendation used: style **Data-Dense Dashboard** (low accessibility risk, light
 and dark supported). Dials: variance 4, motion 3 (subtle), density 8 (dense). Its generated palette
-(cyan `#0891B2`), Neumorphism style and Atkinson font were **not** adopted. Teal and Inter are kept
+(cyan `#0891B2`), Neumorphism style and Atkinson font were **not** adopted. Teal is kept (and the font is Poppins, the user's choice)
 because they're the brand already in place, and Neumorphism carries a high accessibility risk.
 
 ### 5.1 Theming mechanics
@@ -124,7 +124,7 @@ pass it, recording the change here.
 The current `on-primary → var(--color-surface)` mapping in the Tailwind config changes to
 `var(--color-on-primary)`, since surface turns dark in dark mode.
 
-- **Type:** Inter Variable stays. Sizes 12/14/16/18/20/24/30 stay, body 14 / 1.5. Add a 36 px
+- **Type:** **Poppins** for the whole system *(changed 2026-11-18 at the user's request; replaces Inter)*, self-hosted via `@fontsource/poppins` (weights 400, 500, 600, 700; latin subset), fallback `system-ui, -apple-system, 'Segoe UI', sans-serif`. Sizes 12/14/16/18/20/24/30 stay, body 14 / 1.5. Add a 36 px
   display size for dashboard figures. Numbers in tables and stat cards use `tabular-nums`.
 - **Spacing:** the 4 px scale stays. Dense layout: 12 px card padding inside dashboards, 16–24 px
   for page gutters.
@@ -258,7 +258,7 @@ The seed fills realistic Sri Lankan values, matching the existing seed's style.
   `nav`, `main`, `footer`), a skip link, one `h1`.
 - `<title>` and meta description come from the hospital name and tagline.
 - Responsive at 375 / 768 / 1024 / 1440 px. The header collapses to a menu button below 768 px.
-- Lighthouse accessibility ≥ 95 and no layout shift from fonts (Inter is self-hosted already).
+- Lighthouse accessibility ≥ 95 and no layout shift from fonts (Poppins is self-hosted, `font-display: swap`).
 - 21st.dev: may fetch one hero / landing-section reference and one footer reference, adapted to
   tokens, within the ~6-retrieval budget (raise it to ~8).
 
