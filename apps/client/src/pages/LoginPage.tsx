@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -16,6 +16,8 @@ interface FieldErrors {
 export function LoginPage() {
   const { user, loading, login } = useAuth();
   const location = useLocation();
+  const [params] = useSearchParams();
+  const timedOut = params.get('reason') === 'timeout';
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -66,6 +68,14 @@ export function LoginPage() {
         <h1 className="text-2xl font-semibold text-text">Sign in</h1>
         <p className="mt-1 text-sm text-muted">Hospital Management System</p>
         <form onSubmit={onSubmit} noValidate className="mt-6 flex flex-col gap-4">
+          {timedOut && !formError && (
+            <div
+              role="status"
+              className="rounded-control border border-info bg-surface px-3 py-2 text-sm font-medium text-text"
+            >
+              Your session expired. Please sign in again.
+            </div>
+          )}
           {formError && (
             <div
               role="alert"

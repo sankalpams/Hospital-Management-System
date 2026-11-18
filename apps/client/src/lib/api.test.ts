@@ -60,3 +60,20 @@ describe('api()', () => {
     await expect(api('/none', { method: 'POST' })).resolves.toBeUndefined();
   });
 });
+
+describe('api() password change required', () => {
+  it('notifies the handler on 403 PASSWORD_CHANGE_REQUIRED', async () => {
+    const onPasswordChangeRequired = vi.fn();
+    setApiHandlers({ onPasswordChangeRequired });
+    server.use(
+      http.get('*/api/v1/y', () =>
+        HttpResponse.json(
+          { error: { code: 'PASSWORD_CHANGE_REQUIRED', message: 'change it' } },
+          { status: 403 },
+        ),
+      ),
+    );
+    await api('/y').catch(() => undefined);
+    expect(onPasswordChangeRequired).toHaveBeenCalledTimes(1);
+  });
+});

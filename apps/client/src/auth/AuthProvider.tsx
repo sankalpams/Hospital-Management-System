@@ -23,6 +23,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         queryClient.clear();
       },
       onSessionExpiry: setExpiresAt,
+      // RequireAuth then routes the user to /change-password.
+      onPasswordChangeRequired: () =>
+        setUser((u) => (u && !u.mustChangePassword ? { ...u, mustChangePassword: true } : u)),
     });
     return () => setApiHandlers({});
   }, [queryClient]);

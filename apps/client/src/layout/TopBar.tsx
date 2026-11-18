@@ -97,7 +97,6 @@ export function TopBar({ onOpenMenu, menuOpen }: { onOpenMenu: () => void; menuO
                 type="button"
                 role="menuitem"
                 autoFocus
-                // TODO(Task 9): route exists once the change-password screen is built.
                 onClick={() => {
                   setOpen(false);
                   navigate('/change-password');

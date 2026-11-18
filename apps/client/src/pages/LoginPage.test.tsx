@@ -113,3 +113,15 @@ describe('LoginPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Please try again.');
   });
 });
+
+describe('LoginPage timeout notice', () => {
+  it('explains an expired session when reason=timeout', async () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>,
+      '/login?reason=timeout',
+    );
+    expect(await screen.findByText('Your session expired. Please sign in again.')).toBeInTheDocument();
+  });
+});

@@ -17,6 +17,7 @@ export class ApiError extends Error {
 export interface ApiHandlers {
   onUnauthenticated?: () => void;
   onSessionExpiry?: (expiresAt: Date) => void;
+  onPasswordChangeRequired?: () => void;
 }
 
 let handlers: ApiHandlers = {};
@@ -64,7 +65,7 @@ export async function api<T = void>(path: string, init: ApiInit = {}): Promise<T
       /* non-JSON error body */
     }
     if (res.status === 401) handlers.onUnauthenticated?.();
-    // TODO(Task 9): a 403 with code PASSWORD_CHANGE_REQUIRED should route the user to the change-password screen.
+    if (res.status === 403 && code === 'PASSWORD_CHANGE_REQUIRED') handlers.onPasswordChangeRequired?.();
     throw new ApiError(res.status, code, message, details);
   }
 

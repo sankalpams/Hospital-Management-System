@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Spinner } from '../components/ui/Spinner';
+import { SessionTimeoutWarning } from './SessionTimeoutWarning';
 import { useAuth } from './useAuth';
+
+export const CHANGE_PASSWORD_PATH = '/change-password';
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -13,7 +16,14 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       </div>
     );
   }
-  // TODO(Task 9): when user.mustChangePassword, route to the change-password screen.
   if (!user) return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}${location.hash}` }} />;
-  return <>{children}</>;
+  if (user.mustChangePassword && location.pathname !== CHANGE_PASSWORD_PATH) {
+    return <Navigate to={CHANGE_PASSWORD_PATH} replace />;
+  }
+  return (
+    <>
+      {children}
+      <SessionTimeoutWarning />
+    </>
+  );
 }
