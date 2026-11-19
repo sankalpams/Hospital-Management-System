@@ -91,6 +91,12 @@ public class UserService {
         return roles.findAll(Sort.by("name")).stream().map(RoleResponse::from).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<UserResponse> demoStaffLogins() {
+        Instant now = Instant.now(clock);
+        return users.findOnSharedDemoPassword().stream().map(u -> UserResponse.from(u, now)).toList();
+    }
+
     @Transactional
     public TemporaryPasswordResponse create(CreateUserRequest req) {
         String username = User.normaliseUsername(req.username());
