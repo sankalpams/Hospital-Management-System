@@ -25,6 +25,7 @@ export default {
         'soft-foreground': v('primary-soft-foreground'),
       },
       accent: v('accent'),
+      sand: { DEFAULT: 'var(--primitive-color-sand-200)', light: 'var(--primitive-color-sand-100)' },
       ring: v('ring'),
       sidebar: { DEFAULT: v('sidebar'), foreground: v('sidebar-foreground'), active: v('sidebar-active') },
       success: { DEFAULT: v('success'), soft: v('success-soft') },

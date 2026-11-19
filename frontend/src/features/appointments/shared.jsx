@@ -112,7 +112,7 @@ export function SlotPicker({ doctorId, date, value, onChange }) {
                   className={clsx(
                     'h-10 rounded-md border text-sm font-medium tabular transition-colors duration-fast',
                     selected && 'border-primary bg-primary text-primary-foreground',
-                    !selected && slot.available && 'border-border bg-surface hover:border-primary hover:bg-primary-soft',
+                    !selected && slot.available && 'border-border bg-surface hover:border-primary hover:bg-info-soft',
                     !slot.available && 'cursor-not-allowed border-border bg-surface-muted text-foreground-subtle line-through',
                   )}
                 >

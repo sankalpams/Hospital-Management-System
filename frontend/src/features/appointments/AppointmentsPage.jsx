@@ -193,7 +193,7 @@ function MonthView({ date, params, onPickDay }) {
           return (
             <button key={day} type="button" onClick={() => onPickDay(day)}
                     aria-label={`${formatDate(day)}: ${info ? `${info.total} appointments` : 'no appointments'}`}
-                    className={clsx('flex min-h-[5.5rem] flex-col items-start gap-1 border-b border-r border-border p-2 text-left hover:bg-primary-soft', day === today && 'bg-info-soft')}>
+                    className={clsx('flex min-h-[5.5rem] flex-col items-start gap-1 border-b border-r border-border p-2 text-left hover:bg-info-soft', day === today && 'bg-info-soft')}>
               <span className={clsx('text-sm tabular', day === today ? 'font-bold text-primary' : 'text-foreground')}>{i + 1}</span>
               {info && (
                 <span className="flex flex-col gap-0.5 text-[11px] leading-tight sm:text-xs">
