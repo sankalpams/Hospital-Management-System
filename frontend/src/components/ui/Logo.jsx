@@ -14,7 +14,7 @@ export function Logo({ className, inverted = false, showText = true }) {
             HMS
           </span>
           <span className={clsx('text-[11px]', inverted ? 'text-sidebar-foreground' : 'text-foreground-subtle')}>
-            Hospital Management
+            Prabodha Hospital
           </span>
         </span>
       )}
