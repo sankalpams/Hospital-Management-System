@@ -201,7 +201,8 @@ public class UserService {
             throw BusinessException.conflict("LAST_SUPER_ADMIN", "At least one active Super Admin must remain.");
         }
         UserStatus target = active ? UserStatus.ACTIVE : UserStatus.INACTIVE;
-        if (user.getStatus() == target) {
+        UserStatus previous = user.getStatus();
+        if (previous == target) {
             return UserResponse.from(user, Instant.now(clock));
         }
         user.setStatus(target);
@@ -211,8 +212,9 @@ public class UserService {
         }
         users.saveAndFlush(user);
         audit.recordChange("STATUS_CHANGE", "USER", id,
-                (active ? "Activated " : "Deactivated ") + user.getUsername(),
-                Map.of("status", active ? "INACTIVE" : "ACTIVE"), Map.of("status", target.name()));
+                (previous == UserStatus.PENDING ? (active ? "Approved sign-up of " : "Rejected sign-up of ")
+                        : (active ? "Activated " : "Deactivated ")) + user.getUsername(),
+                Map.of("status", previous.name()), Map.of("status", target.name()));
         if (!active) {
             revokeAfterCommit(user.getUsername());
         }
