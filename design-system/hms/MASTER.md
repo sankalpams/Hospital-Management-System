@@ -21,9 +21,9 @@
 | Token | Hex | Role |
 |---|---|---|
 | `sand-50` | `#FDFDF9` | App page background (ivory) |
-| `sand-100` | `#F3E6D7` | Sidebar text on deep teal |
+| `sand-100` | `#F3E6D7` | Sidebar text, table headers, muted panels, neutral badges |
 | `sand-200` | `#E1C7A5` | Strong borders, selected rows, chart 4 |
-| `brand-300` | `#6AA6AA` | Accent, chart 3 (not for text: 2.8 : 1 on white) |
+| `brand-300` | `#6AA6AA` | Soft badges (Occupied, role chips), avatars, chart 3 (never as text on white: 2.8 : 1) |
 | `brand-600` | `#2C5E63` | **Primary buttons, links, sidebar** (7.27 : 1 with white) |
 
 ### Added shades (same hues, needed for accessibility)
@@ -32,7 +32,7 @@
 |---|---|---|
 | `brand-50` / `brand-100` | `#EDF5F5` / `#D3E7E7` | Info and `primary-soft` badge fills |
 | `brand-500` | `#4A8A8F` | Focus ring (3.94 : 1 on white; the supplied `#6AA6AA` fails the 3 : 1 UI rule) |
-| `brand-700` / `brand-800` | `#224A4E` / `#1A3A3D` | Primary hover, info text / active nav item, text on teal tints |
+| `brand-700` / `brand-800` / `brand-900` | `#224A4E` / `#1A3A3D` / `#102628` | Primary hover, info text / active nav item / text on sea-teal badges (5.75 : 1) |
 | `sand-700` | `#9A6A36` | Chart 2 (dark tan) |
 | `stone-50 … 900` | `#FAF6F0` … `#1F2A2B` | Warm neutrals for text, borders and muted surfaces, so greys sit with the sand tones instead of cool slate |
 
@@ -40,7 +40,7 @@
 
 | Purpose | Token | Text / soft background |
 |---|---|---|
-| Page | `background` / `surface` / `surface-muted` | sand-50 / white / stone-50 |
+| Page | `background` / `surface` / `surface-muted` | sand-50 / white / sand-100 |
 | Text | `foreground` / `foreground-muted` / `foreground-subtle` | stone-900 / stone-600 / stone-500 |
 | Lines | `border` / `border-strong` | stone-200 / sand-200 |
 | Action | `primary` / `primary-hover` / `primary-foreground` | brand-600 / brand-700 / white |
@@ -49,7 +49,7 @@
 | Status: warning | `warning` / `warning-soft` | amber-700 on amber-50 (4.75) |
 | Status: danger | `danger` / `danger-soft` | red-700 on red-50 (5.91) |
 | Status: info | `info` / `info-soft` | brand-700 on brand-50 (8.80) |
-| Status: neutral | `neutral` / `neutral-soft` | stone-700 on stone-100 (9.71) |
+| Status: neutral | `neutral` / `neutral-soft` | stone-700 on sand-100 (9.28) |
 | Status: special | `special` / `special-soft` | violet-700 on violet-50 (6.48) |
 | Charts | `chart-1` … `chart-6` | brand-600, sand-700, brand-300, sand-200, green-600, stone-400 |
 
