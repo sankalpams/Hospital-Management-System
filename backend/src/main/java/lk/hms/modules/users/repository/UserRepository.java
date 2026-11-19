@@ -26,6 +26,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     long countByStatus(UserStatus status);
 
+    /**
+     * Demo staff logins still on the shared demo password: StaffAccountSeeder hashes that password once and gives
+     * every account the same hash, so an account drops off this list as soon as its owner changes the password.
+     */
+    @Query(value = """
+            SELECT u.* FROM users u
+            WHERE u.password_hash IN (SELECT password_hash FROM users GROUP BY password_hash HAVING COUNT(*) >= 5)
+            ORDER BY u.full_name""", nativeQuery = true)
+    java.util.List<User> findOnSharedDemoPassword();
+
     boolean existsByEmailAndIdNot(String email, Long id);
 
     boolean existsByEmail(String email);
