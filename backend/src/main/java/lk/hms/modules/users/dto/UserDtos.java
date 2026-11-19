@@ -39,6 +39,17 @@ public final class UserDtos {
             @NotEmpty(message = "Assign at least one role.") Set<@NotBlank String> roles) {
     }
 
+    /** Public sign-up form. The account stays PENDING until an administrator activates it. */
+    public record SignUpRequest(
+            @NotBlank @Size(min = 3, max = 50)
+            @Pattern(regexp = "^[A-Za-z0-9._-]+$", message = "Use letters, numbers, dot, underscore or hyphen only.")
+            String username,
+            @NotBlank @Size(max = 120) String fullName,
+            @Email @Size(max = 120) String email,
+            @NotBlank String role,
+            @NotBlank @Size(max = 72) String password) {
+    }
+
     public record UpdateUserRequest(
             @NotBlank @Size(max = 120) String fullName,
             @Email @Size(max = 120) String email,
