@@ -43,6 +43,13 @@ public class UserController {
         return service.search(q, status, role, page, size, sort);
     }
 
+    /** Demo staff logins that still use the shared password set in HMS_DEMO_STAFF_PASSWORD. Super Admin only. */
+    @GetMapping("/users/demo-staff")
+    @PreAuthorize("hasAuthority('settings:manage')")   // held only by Super Admin
+    public List<UserResponse> demoStaff() {
+        return service.demoStaffLogins();
+    }
+
     @GetMapping("/users/{id}")
     @PreAuthorize("hasAuthority('user:read')")
     public UserResponse get(@PathVariable Long id) {
