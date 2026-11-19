@@ -6,6 +6,7 @@ import { useAuth } from './auth/AuthProvider';
 import { permissionFor } from './config/navigation';
 import LoginPage from './features/auth/LoginPage';
 import LandingPage from './features/landing/LandingPage';
+import SignUpPage from './features/auth/SignUpPage';
 import ChangePasswordPage from './features/auth/ChangePasswordPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import UsersPage from './features/users/UsersPage';
@@ -44,6 +45,7 @@ export default function App() {
       <Route element={<AnonymousOnly />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/welcome" element={<LandingPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
       </Route>
       <Route element={<RequireAuth />}>
         {user?.mustChangePassword ? (
