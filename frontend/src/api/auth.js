@@ -6,6 +6,7 @@ export const authApi = {
   me: () => api.get('/auth/me').then((r) => r.data),
   login: (username, password) => api.post('/auth/login', { username, password }).then((r) => r.data),
   logout: () => api.post('/auth/logout'),
+  signUp: (request) => api.post('/auth/sign-up', request),
   changePassword: (currentPassword, newPassword) =>
     api.post('/auth/change-password', { currentPassword, newPassword }).then((r) => r.data),
 };
