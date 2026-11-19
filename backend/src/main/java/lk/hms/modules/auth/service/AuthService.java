@@ -87,6 +87,11 @@ public class AuthService {
             throw badCredentials();
         }
 
+        if (user.getStatus() == UserStatus.PENDING) {
+            recordAttempt(username, user.getId(), false, "PENDING", client, now);
+            throw BusinessException.forbidden("ACCOUNT_PENDING",
+                    "Your sign-up request is waiting for an administrator to approve it.");
+        }
         if (user.getStatus() != UserStatus.ACTIVE) {
             recordAttempt(username, user.getId(), false, "INACTIVE", client, now);
             throw BusinessException.forbidden("ACCOUNT_INACTIVE",
