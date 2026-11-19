@@ -5,7 +5,6 @@ import { AppShell } from './components/layout/AppShell';
 import { useAuth } from './auth/AuthProvider';
 import { permissionFor } from './config/navigation';
 import LoginPage from './features/auth/LoginPage';
-import LandingPage from './features/landing/LandingPage';
 import SignUpPage from './features/auth/SignUpPage';
 import ChangePasswordPage from './features/auth/ChangePasswordPage';
 import DashboardPage from './features/dashboard/DashboardPage';
@@ -44,7 +43,6 @@ export default function App() {
     <Routes>
       <Route element={<AnonymousOnly />}>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/welcome" element={<LandingPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
       </Route>
       <Route element={<RequireAuth />}>

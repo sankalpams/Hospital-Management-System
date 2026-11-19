@@ -8,11 +8,7 @@ export function RequireAuth() {
   const { status, user } = useAuth();
   const location = useLocation();
   if (status === 'loading') return <FullPageSpinner label="Checking your session" />;
-  if (status !== 'authenticated') {
-    // A visitor arriving at the home address sees the landing page; deep links go straight to sign-in.
-    if (location.pathname === '/') return <Navigate to="/welcome" replace />;
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
+  if (status !== 'authenticated') return <Navigate to="/login" replace state={{ from: location }} />;
   if (user?.mustChangePassword && location.pathname !== '/change-password') {
     return <Navigate to="/change-password" replace />;
   }
