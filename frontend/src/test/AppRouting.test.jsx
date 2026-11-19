@@ -46,9 +46,15 @@ describe('routing', () => {
     expect(screen.getByRole('navigation', { name: /main navigation/i })).toBeInTheDocument();
   });
 
-  it('redirects anonymous visitors to the sign-in page', async () => {
+  it('shows anonymous visitors the landing page at the home address', async () => {
     authState = { ...auth(baseUser), status: 'anonymous', user: null };
     renderAt('/');
+    expect(await screen.findByRole('heading', { level: 1, name: /every bed, booking and bill/i })).toBeInTheDocument();
+  });
+
+  it('sends anonymous deep links straight to sign-in', async () => {
+    authState = { ...auth(baseUser), status: 'anonymous', user: null };
+    renderAt('/patients');
     expect(await screen.findByRole('heading', { name: /sign in/i })).toBeInTheDocument();
   });
 
