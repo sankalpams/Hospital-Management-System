@@ -39,3 +39,20 @@
   .lg\:pl-sidebar { padding-left: 0 !important; }
   .print-sheet { border: 0 !important; box-shadow: none !important; }
 }
+
+/* Landing page: one authored moment. A patient is admitted to bed ICU1-B on load. */
+.landing ::selection { background: var(--primitive-color-sand-200); color: var(--color-primary-soft-foreground); }
+.landing-count::after { content: '3'; }
+@media (prefers-reduced-motion: no-preference) {
+  .landing-count::after { animation: landing-count 1.4s steps(1, end) both; }
+  .landing-arriving { animation: landing-bed 1.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .landing-arriving .landing-status,
+  .landing-arriving .landing-patient { animation: landing-in 0.7s 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+}
+@keyframes landing-count { 0%, 70% { content: '2'; } 100% { content: '3'; } }
+@keyframes landing-bed {
+  0%, 60% { border-color: var(--color-border); box-shadow: none; }
+  75% { border-color: var(--color-accent); box-shadow: 0 6px 18px -6px rgb(44 94 99 / 0.35); }
+  100% { border-color: var(--color-border); box-shadow: none; }
+}
+@keyframes landing-in { from { opacity: 0; filter: blur(4px); transform: translateY(4px); } to { opacity: 1; filter: none; transform: none; } }
