@@ -16,44 +16,44 @@
 
 ## 2. Colour
 
-### Brand palette (exactly as supplied)
+### Brand palette (exactly as supplied, Nov 2026)
 
 | Token | Hex | Role |
 |---|---|---|
-| `brand-100` | `#B7D3E3` | Soft fills, sidebar text, `primary-soft` badges |
-| `brand-200` | `#A4C8E1` | Strong borders, selected rows, chart 3 |
-| `brand-300` | `#8FB8D8` | Decorative, illustrations |
-| `brand-400` | `#6FA3D8` | Chart 2, icon accents on white |
-| `brand-500` | `#4A8BBE` | Accent, focus ring (3.67 : 1 against white, which passes the 3 : 1 rule for UI components) |
+| `sand-50` | `#FDFDF9` | App page background (ivory) |
+| `sand-100` | `#F3E6D7` | Sidebar text on deep teal |
+| `sand-200` | `#E1C7A5` | Strong borders, selected rows, chart 4 |
+| `brand-300` | `#6AA6AA` | Accent, chart 3 (not for text: 2.8 : 1 on white) |
+| `brand-600` | `#2C5E63` | **Primary buttons, links, sidebar** (7.27 : 1 with white) |
 
-### Added shades (same hue, needed for accessibility)
+### Added shades (same hues, needed for accessibility)
 
-| Token | Hex | Role | White text contrast |
-|---|---|---|---|
-| `brand-50` | `#EEF5FA` | App page background | — |
-| `brand-600` | `#346F9E` | **Primary buttons, links, active nav** | 5.37 : 1 ✅ |
-| `brand-700` | `#24537A` | Primary hover, info text | 8.10 : 1 ✅ |
-| `brand-800` | `#1A3C59` | Sidebar background, headings on tints | 11.5 : 1 ✅ |
-
-Why the extra shades: none of the five supplied blues reaches 4.5 : 1 with white text, so a "deep blue primary button" in `#4A8BBE` would fail WCAG AA for normal-size text. The 600–800 shades keep the same hue and fix that.
+| Token | Hex | Role |
+|---|---|---|
+| `brand-50` / `brand-100` | `#EDF5F5` / `#D3E7E7` | Info and `primary-soft` badge fills |
+| `brand-500` | `#4A8A8F` | Focus ring (3.94 : 1 on white; the supplied `#6AA6AA` fails the 3 : 1 UI rule) |
+| `brand-700` / `brand-800` | `#224A4E` / `#1A3A3D` | Primary hover, info text / active nav item, text on teal tints |
+| `sand-700` | `#9A6A36` | Chart 2 (dark tan) |
+| `stone-50 … 900` | `#FAF6F0` … `#1F2A2B` | Warm neutrals for text, borders and muted surfaces, so greys sit with the sand tones instead of cool slate |
 
 ### Semantic tokens (components use only these, never raw hex)
 
 | Purpose | Token | Text / soft background |
 |---|---|---|
-| Page | `background` / `surface` / `surface-muted` | `#EEF5FA` / `#FFFFFF` / `#F8FAFC` |
-| Text | `foreground` / `foreground-muted` / `foreground-subtle` | slate-900 / slate-600 / `#5B6B82` |
-| Lines | `border` / `border-strong` | slate-200 / brand-200 |
+| Page | `background` / `surface` / `surface-muted` | sand-50 / white / stone-50 |
+| Text | `foreground` / `foreground-muted` / `foreground-subtle` | stone-900 / stone-600 / stone-500 |
+| Lines | `border` / `border-strong` | stone-200 / sand-200 |
 | Action | `primary` / `primary-hover` / `primary-foreground` | brand-600 / brand-700 / white |
+| Sidebar | `sidebar` / `sidebar-foreground` / `sidebar-active` | brand-600 / sand-100 / brand-800 |
 | Status: success | `success` / `success-soft` | green-700 on green-50 (4.76) |
 | Status: warning | `warning` / `warning-soft` | amber-700 on amber-50 (4.75) |
 | Status: danger | `danger` / `danger-soft` | red-700 on red-50 (5.91) |
-| Status: info | `info` / `info-soft` | brand-700 on brand-50 (7.36) |
-| Status: neutral | `neutral` / `neutral-soft` | slate-700 on slate-100 (9.45) |
+| Status: info | `info` / `info-soft` | brand-700 on brand-50 (8.80) |
+| Status: neutral | `neutral` / `neutral-soft` | stone-700 on stone-100 (9.71) |
 | Status: special | `special` / `special-soft` | violet-700 on violet-50 (6.48) |
-| Charts | `chart-1` … `chart-6` | brand-600, brand-400, brand-200, amber-500, green-600, slate-400 |
+| Charts | `chart-1` … `chart-6` | brand-600, sand-700, brand-300, sand-200, green-600, stone-400 |
 
-All 17 text/background pairs are checked by `npm run check:contrast` (frontend), and the check fails the build if any pair drops below 4.5 : 1, or 3 : 1 for UI parts.
+All 19 text/background pairs are checked by `npm run check:contrast` (frontend), and the check fails the build if any pair drops below 4.5 : 1, or 3 : 1 for UI parts.
 
 ### Status → badge colour mapping (used everywhere)
 
