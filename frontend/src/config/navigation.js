@@ -1,4 +1,4 @@
-import { BarChart3, BedDouble, Building2, CalendarCheck, IdCard, Receipt, CalendarDays, FlaskConical, Pill, LayoutDashboard, ScrollText, Stethoscope, Users, UsersRound } from 'lucide-react';
+import { BarChart3, BedDouble, Building2, CalendarCheck, IdCard, KeyRound, Receipt, CalendarDays, FlaskConical, Pill, LayoutDashboard, ScrollText, Stethoscope, Users, UsersRound } from 'lucide-react';
 
 /**
  * Single source for sidebar items AND route permission checks, so a hidden menu item is also
@@ -47,6 +47,7 @@ export const NAV_GROUPS = [
     label: 'Administration',
     items: [
       { to: '/users', label: 'Users', icon: UsersRound, permission: 'user:read' },
+      { to: '/staff-logins', label: 'Staff logins', icon: KeyRound, permission: 'settings:manage' },
       { to: '/audit', label: 'Audit log', icon: ScrollText, permission: 'audit:read' },
     ],
   },

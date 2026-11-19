@@ -10,6 +10,7 @@ import ChangePasswordPage from './features/auth/ChangePasswordPage';
 import DashboardPage from './features/dashboard/DashboardPage';
 import UsersPage from './features/users/UsersPage';
 import AuditLogPage from './features/audit/AuditLogPage';
+import DemoStaffPage from './features/users/DemoStaffPage';
 import DepartmentsPage from './features/departments/DepartmentsPage';
 import PatientsPage from './features/patients/PatientsPage';
 import PatientFormPage from './features/patients/PatientFormPage';
@@ -87,6 +88,7 @@ export default function App() {
             <Route path="/departments" element={guarded(<DepartmentsPage />, permissionFor('/departments'))} />
             <Route path="/users" element={guarded(<UsersPage />, permissionFor('/users'))} />
             <Route path="/audit" element={guarded(<AuditLogPage />, permissionFor('/audit'))} />
+            <Route path="/staff-logins" element={guarded(<DemoStaffPage />, permissionFor('/staff-logins'))} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         )}
