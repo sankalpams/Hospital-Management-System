@@ -34,7 +34,7 @@ import java.util.*;
  */
 @Component
 @ConditionalOnProperty(name = "hms.demo.seed", havingValue = "true")
-@Order(Ordered.LOWEST_PRECEDENCE)   // after BootstrapAdminRunner, so a fresh database already has its first admin
+@Order(Ordered.LOWEST_PRECEDENCE - 1)   // after BootstrapAdminRunner (first admin), before StaffAccountSeeder (needs employees)
 public class DemoDataSeeder implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
