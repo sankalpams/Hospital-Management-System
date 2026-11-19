@@ -1,6 +1,6 @@
 import { safeAppPath } from '../../lib/forms';
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CalendarCheck2, FlaskConical, LogIn, Pill, ReceiptText, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../../auth/AuthProvider';
 import { toApiError } from '../../api/client';
@@ -132,6 +132,10 @@ export default function LoginPage() {
 
           <p className="mt-6 text-xs text-foreground-subtle">
             Forgot your password? Ask a hospital administrator to issue a temporary one.
+          </p>
+          <p className="mt-3 text-sm text-foreground-muted">
+            New to Prabodha Hospital?{' '}
+            <Link to="/sign-up" className="font-medium text-primary underline-offset-4 hover:underline">Request an account</Link>
           </p>
         </div>
       </main>
