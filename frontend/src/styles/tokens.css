@@ -10,6 +10,7 @@
   --primitive-color-brand-600: #2C5E63;
   --primitive-color-brand-700: #224A4E;
   --primitive-color-brand-800: #1A3A3D;
+  --primitive-color-brand-900: #102628;
   --primitive-color-green-50: #ECFDF3;
   --primitive-color-green-600: #16A34A;
   --primitive-color-green-700: #15803D;
@@ -54,7 +55,7 @@
 :root {
   --color-background: #FDFDF9;
   --color-surface: #FFFFFF;
-  --color-surface-muted: #FAF6F0;
+  --color-surface-muted: #F3E6D7;
   --color-foreground: #1F2A2B;
   --color-foreground-muted: #574F47;
   --color-foreground-subtle: #6B6259;
@@ -63,8 +64,8 @@
   --color-primary: #2C5E63;
   --color-primary-hover: #224A4E;
   --color-primary-foreground: #FFFFFF;
-  --color-primary-soft: #D3E7E7;
-  --color-primary-soft-foreground: #1A3A3D;
+  --color-primary-soft: #6AA6AA;
+  --color-primary-soft-foreground: #102628;
   --color-accent: #6AA6AA;
   --color-ring: #4A8A8F;
   --color-sidebar: #2C5E63;
@@ -79,7 +80,7 @@
   --color-info: #224A4E;
   --color-info-soft: #EDF5F5;
   --color-neutral: #3F3933;
-  --color-neutral-soft: #F3ECE2;
+  --color-neutral-soft: #F3E6D7;
   --color-special: #6D28D9;
   --color-special-soft: #F5F3FF;
   --color-chart-1: #2C5E63;
