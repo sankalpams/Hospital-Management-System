@@ -20,6 +20,7 @@ class UserAdminIntegrationTest {
     @Autowired Api api;
     @Autowired UserRepository users;
     @Autowired JdbcTemplate jdbc;
+    @Autowired lk.hms.support.TestUsers testUsers;
 
     private static String uniqueName() {
         return "u" + UUID.randomUUID().toString().substring(0, 10);
@@ -27,6 +28,21 @@ class UserAdminIntegrationTest {
 
     private Api.Response createUser(Api.Session admin, String username, List<String> roles) throws Exception {
         return admin.post("/api/v1/users", Map.of("username", username, "fullName", "Nimal Perera", "roles", roles));
+    }
+
+    @Test
+    void onlySuperAdminSeesLoginsOnTheSharedDemoPassword() throws Exception {
+        String sharedHash = "$2a$12$" + UUID.randomUUID().toString().replace("-", "") + "shareddemohashxxxxxxxxxx";
+        List<String> names = new java.util.ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            User u = testUsers.active("NURSE");
+            jdbc.update("UPDATE users SET password_hash = ? WHERE id = ?", sharedHash, u.getId());
+            names.add(u.getUsername());
+        }
+        Api.Response list = api.as("SUPER_ADMIN").get("/api/v1/users/demo-staff");
+        assertThat(list.status()).isEqualTo(200);
+        assertThat(list.body().findValuesAsText("username")).containsAll(names);
+        assertThat(api.as("HOSPITAL_ADMIN").get("/api/v1/users/demo-staff").status()).isEqualTo(403);
     }
 
     @Test
