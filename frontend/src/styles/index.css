@@ -40,3 +40,7 @@
   .print-sheet { border: 0 !important; box-shadow: none !important; }
 }
 
+
+/* Sidebar still scrolls on short screens, without a grey browser scrollbar on the teal panel. */
+.sidebar-scroll { scrollbar-width: none; }
+.sidebar-scroll::-webkit-scrollbar { display: none; }

@@ -35,7 +35,7 @@ export function Sidebar({ open, onClose }) {
           </button>
         </div>
 
-        <nav aria-label="Main navigation" className="flex-1 overflow-y-auto px-3 pb-6 pt-2">
+        <nav aria-label="Main navigation" className="sidebar-scroll flex-1 overflow-y-auto px-3 pb-6 pt-2">
           {groups.map((group) => (
             <div key={group.label} className="mb-5">
               <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground">
