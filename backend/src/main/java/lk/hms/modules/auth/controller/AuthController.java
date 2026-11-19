@@ -39,17 +39,20 @@ public class AuthController {
     private final CsrfTokenRepository csrfRepository;
     private final FindByIndexNameSessionRepository<? extends Session> sessions;
     private final lk.hms.modules.doctors.repository.DoctorRepository doctors;
+    private final lk.hms.modules.users.service.UserService userService;
 
     public AuthController(AuthService authService, AuditService audit, SecurityContextRepository contextRepository,
                           CsrfTokenRepository csrfRepository,
                           FindByIndexNameSessionRepository<? extends Session> sessions,
-                          lk.hms.modules.doctors.repository.DoctorRepository doctors) {
+                          lk.hms.modules.doctors.repository.DoctorRepository doctors,
+                          lk.hms.modules.users.service.UserService userService) {
         this.authService = authService;
         this.audit = audit;
         this.contextRepository = contextRepository;
         this.csrfRepository = csrfRepository;
         this.sessions = sessions;
         this.doctors = doctors;
+        this.userService = userService;
     }
 
     private CurrentUserResponse me(lk.hms.common.security.HmsUserPrincipal p) {
@@ -69,6 +72,12 @@ public class AuthController {
         HmsUserPrincipal principal = authService.login(body.username(), body.password(), clientInfo(request));
         establishSession(principal, request, response);
         return me(principal);
+    }
+
+    @PostMapping("/sign-up")
+    public ResponseEntity<Void> signUp(@Valid @RequestBody lk.hms.modules.users.dto.UserDtos.SignUpRequest body) {
+        userService.signUp(body);
+        return ResponseEntity.accepted().build();
     }
 
     @PostMapping("/logout")
