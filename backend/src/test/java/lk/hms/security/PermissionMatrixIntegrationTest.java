@@ -48,7 +48,7 @@ class PermissionMatrixIntegrationTest {
             "GET /api/v1/analytics/dashboard",
             // report permission is checked in the controller per report (see AnalyticsControllerPermissions below)
             "GET /api/v1/analytics/{report}", "GET /api/v1/analytics/doctors/workload", "GET /api/v1/analytics/{report}/export.csv");
-    private static final Set<String> PUBLIC = Set.of("GET /api/v1/auth/csrf", "POST /api/v1/auth/login");
+    private static final Set<String> PUBLIC = Set.of("GET /api/v1/auth/csrf", "POST /api/v1/auth/login", "POST /api/v1/auth/sign-up");
     private static final Pattern CODE = Pattern.compile("'([a-z:-]+)'");
 
     @Autowired Api api;
