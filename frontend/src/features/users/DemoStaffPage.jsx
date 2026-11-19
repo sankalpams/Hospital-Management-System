@@ -4,7 +4,6 @@ import { toApiError } from '../../api/client';
 import { PageHeader } from '../../components/layout/AppShell';
 import { DataTable } from '../../components/ui/DataTable';
 import { Badge } from '../../components/ui/Badge';
-import { Alert } from '../../components/ui/Alert';
 import { roleLabel } from '../../lib/roles';
 
 /** Super Admin only: demo staff logins still on the shared password set in Railway (HMS_DEMO_STAFF_PASSWORD). */
@@ -24,10 +23,6 @@ export default function DemoStaffPage() {
   return (
     <>
       <PageHeader title="Staff logins" description="Demo staff accounts and the usernames to sign in with." />
-      <Alert tone="info" className="mb-4">
-        They all share one password: the value of HMS_DEMO_STAFF_PASSWORD in the backend's Railway variables. It is never
-        stored or shown here. An account leaves this list once its owner changes their password.
-      </Alert>
       <DataTable
         columns={columns}
         page={page}
