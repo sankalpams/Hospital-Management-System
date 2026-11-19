@@ -7,7 +7,7 @@
 web
 
 ## Users
-- **Primary (landing page):** portfolio visitors (recruiters, prospective clients, reviewers) evaluating what the system does, then trying it by signing in.
+- **Showcase visitors:** portfolio visitors (recruiters, prospective clients, reviewers) evaluating what the system does, then trying it by signing in.
 - **Primary (application):** staff of a single hospital in nine roles: Super Admin, Hospital Admin, Doctor, Nurse, Receptionist, Lab Staff, Pharmacist, Accountant, HR Manager.
 
 ## Product Purpose

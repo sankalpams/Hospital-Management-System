@@ -6,7 +6,6 @@ import clsx from 'clsx';
 const variants = {
   primary: 'bg-primary text-primary-foreground hover:bg-primary-hover shadow-xs',
   secondary: 'bg-surface text-primary border border-border-strong hover:bg-info-soft',
-  inverse: 'bg-sidebar-foreground text-primary-soft-foreground hover:bg-white shadow-xs',
   ghost: 'bg-transparent text-foreground-muted hover:bg-surface-muted hover:text-foreground',
   danger: 'bg-danger text-white hover:opacity-90 shadow-xs',
 };
