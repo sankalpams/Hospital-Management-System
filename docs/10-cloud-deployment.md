@@ -48,7 +48,22 @@ Visitors only ever use the Vercel address. Vercel forwards `/api/*` to Railway, 
 
 1. Open your Vercel address and sign in as `sysadmin` with the bootstrap password. You'll be asked to choose a new one.
 2. In **Users**, create the staff accounts you want. The online database starts empty: no patients and none of your local accounts.
-3. Optional: if you want the online system to look like the local one (a year of demo activity and the role logins from the README), ask Claude to run the seeder once against the Railway database.
+3. Optional: fill the online system with demo data (section 5).
+
+## 5. Optional: demo data
+
+A year of invented hospital activity (patients, appointments, consultations, lab tests, prescriptions, admissions, invoices, payments, staff attendance and leave), so the dashboards and reports have something to show.
+
+1. Railway → backend service → **Variables**, add:
+   ```
+   HMS_DEMO_SEED=true
+   HMS_DEMO_PATIENTS=1000
+   ```
+   `HMS_DEMO_PATIENTS` sets the size: 1000 patients brings about 6,600 appointments, 6,500 invoices and 1,100 admissions. Activity scales with it; 3000 is the full size.
+2. Deploy. The app starts normally and fills the database in the background, about 5 minutes for 1000 patients. The deploy log ends with `Demo data seeded in … s: {…}` when it's done.
+3. **Remove both variables** and deploy once more.
+
+It runs once only (a marker in `system_settings`), and it refuses any database that already has patients, so it can never mix invented records into real ones. It needs a first user to exist, which is the case after section 4.
 
 ## Troubleshooting
 

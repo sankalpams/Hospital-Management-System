@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -21,16 +23,18 @@ import java.time.*;
 import java.util.*;
 
 /**
- * Development-only demo data: about a year of synthetic hospital activity so the analytics have
- * real rows to aggregate. Runs once when the dev profile starts with {@code --hms.demo.seed=true};
- * a marker in system_settings stops a second run. It writes straight to the tables (the services
+ * Demo data: about a year of synthetic hospital activity so the analytics have real rows to aggregate.
+ * Runs once when started with {@code hms.demo.seed=true} (env HMS_DEMO_SEED=true), sized by
+ * {@code hms.demo.patients} (default 3000; appointments and admissions scale with it). A marker in
+ * system_settings stops a second run, and it refuses any database that already holds patients, so it
+ * can never mix invented records into real ones. It writes straight to the tables (the services
  * refuse past dates) but keeps every rule the services keep: numbers come from the sequences table,
  * the stock ledger sums to each batch's on-hand, invoices satisfy their arithmetic checks, a bed
  * holds one patient at a time and a patient has one live admission. Deterministic (fixed seed).
  */
 @Component
-@Profile("dev")
 @ConditionalOnProperty(name = "hms.demo.seed", havingValue = "true")
+@Order(Ordered.LOWEST_PRECEDENCE)   // after BootstrapAdminRunner, so a fresh database already has its first admin
 public class DemoDataSeeder implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
@@ -39,11 +43,14 @@ public class DemoDataSeeder implements ApplicationRunner {
     private final JdbcTemplate jdbc;
     private final TransactionTemplate tx;
     private final HospitalTime time;
+    private final int patientTarget;
 
-    public DemoDataSeeder(JdbcTemplate jdbc, TransactionTemplate tx, HospitalTime time) {
+    public DemoDataSeeder(JdbcTemplate jdbc, TransactionTemplate tx, HospitalTime time,
+                          @Value("${hms.demo.patients:3000}") int patientTarget) {
         this.jdbc = jdbc;
         this.tx = tx;
         this.time = time;
+        this.patientTarget = Math.max(100, Math.min(patientTarget, 20000));
     }
 
     @Override
@@ -51,6 +58,16 @@ public class DemoDataSeeder implements ApplicationRunner {
         Integer done = jdbc.queryForObject("SELECT COUNT(*) FROM system_settings WHERE setting_key = ?", Integer.class, MARKER);
         if (done != null && done > 0) {
             log.info("Demo data already seeded; nothing to do.");
+            return;
+        }
+        Integer users = jdbc.queryForObject("SELECT COUNT(*) FROM users", Integer.class);
+        if (users == null || users == 0) {
+            log.warn("Demo data NOT seeded: no user exists yet. Set HMS_BOOTSTRAP_ADMIN_USERNAME / _PASSWORD (or sign in once) and restart.");
+            return;
+        }
+        Integer existingPatients = jdbc.queryForObject("SELECT COUNT(*) FROM patients", Integer.class);
+        if (existingPatients != null && existingPatients > 0) {
+            log.warn("Demo data NOT seeded: this database already has {} patient(s). The seeder only runs on an empty hospital.", existingPatients);
             return;
         }
         long t0 = System.currentTimeMillis();
@@ -169,6 +186,8 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private final class Run {
         final Random rnd = new Random(20261118L);
+        // activity scales with the number of patients (3000 = the full year this seeder was tuned for)
+        final double scale = patientTarget / 3000.0;
         final ZoneId zone = time.zone();
         final LocalDate today = time.today();
         final LocalDate start = today.minusDays(365);
@@ -345,8 +364,9 @@ public class DemoDataSeeder implements ApplicationRunner {
         }
 
         void patients() {
-            for (int i = 0; i < 3000; i++) {
-                LocalDate reg = i < 1700
+            int oldPatients = (int) Math.round(patientTarget * 1700 / 3000.0);
+            for (int i = 0; i < patientTarget; i++) {
+                LocalDate reg = i < oldPatients
                         ? start.minusDays(between(1, 4 * 365))
                         // within the year, slowly growing: sqrt skews registrations towards recent months
                         : start.plusDays((long) (365 * Math.sqrt(rnd.nextDouble())));
@@ -489,8 +509,8 @@ public class DemoDataSeeder implements ApplicationRunner {
                 if (!doc.days().contains(d.getDayOfWeek())) {
                     continue;
                 }
-                int booked = past ? (int) Math.round(between(7, 14) * season * growth)
-                        : Math.max(0, 13 - (int) (d.toEpochDay() - today.toEpochDay()) + between(-2, 1));
+                int booked = past ? Math.max(1, (int) Math.round(between(7, 14) * season * growth * scale))
+                        : Math.max(0, (int) Math.round((13 - (d.toEpochDay() - today.toEpochDay()) + between(-2, 1)) * scale));
                 booked = Math.min(16, booked);
                 List<Integer> slots = new ArrayList<>();
                 for (int i = 0; i < 16; i++) {
@@ -796,7 +816,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             if (wards.isEmpty()) {
                 return;
             }
-            int n = between(3, 8);
+            int n = (int) Math.round(between(3, 8) * Math.min(1.0, scale * 1.5));
             for (int i = 0; i < n; i++) {
                 double r = rnd.nextDouble();
                 WardS ward = wards.get(r < .25 ? 0 : r < .5 ? 1 : r < .63 ? 2 : r < .78 ? 3 : r < .87 ? 4 : 5);
