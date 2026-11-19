@@ -10,6 +10,8 @@ import lk.hms.common.security.SessionRevoker;
 import lk.hms.common.security.TemporaryPasswords;
 import lk.hms.modules.users.dto.UserDtos.CreateUserRequest;
 import lk.hms.modules.users.dto.UserDtos.RoleResponse;
+import lk.hms.modules.users.dto.UserDtos.SignUpRequest;
+import lk.hms.modules.auth.service.PasswordPolicy;
 import lk.hms.modules.users.dto.UserDtos.TemporaryPasswordResponse;
 import lk.hms.modules.users.dto.UserDtos.UpdateUserRequest;
 import lk.hms.modules.users.dto.UserDtos.UserResponse;
@@ -113,6 +115,45 @@ public class UserService {
 
         audit.recordChange("CREATE", "USER", user.getId(), "Created account " + username, null, snapshot(user));
         return new TemporaryPasswordResponse(UserResponse.from(user, Instant.now(clock)), temporary);
+    }
+
+    /** Roles a visitor may ask for; administrator roles are only ever granted by an administrator. */
+    static final Set<String> SIGN_UP_ROLES =
+            Set.of("DOCTOR", "NURSE", "RECEPTIONIST", "LAB_STAFF", "PHARMACIST", "ACCOUNTANT", "HR_MANAGER");
+    /** Stops a flood of requests from filling the table; an administrator clears the queue to reopen it. */
+    static final long MAX_PENDING = 100;
+
+    @Transactional
+    public void signUp(SignUpRequest req) {
+        String username = User.normaliseUsername(req.username());
+        if (!SIGN_UP_ROLES.contains(req.role())) {
+            throw BusinessException.badRequest("ROLE_NOT_REQUESTABLE", "Choose one of the listed staff roles.");
+        }
+        if (users.countByStatus(UserStatus.PENDING) >= MAX_PENDING) {
+            throw BusinessException.conflict("SIGN_UP_QUEUE_FULL",
+                    "Sign-up is paused because many requests are waiting. Try again later.");
+        }
+        if (users.existsByUsername(username)) {
+            throw BusinessException.conflict("USERNAME_TAKEN", "The username '" + username + "' is already in use.");
+        }
+        String email = blankToNull(req.email());
+        if (email != null && users.existsByEmail(email)) {
+            throw BusinessException.conflict("EMAIL_TAKEN", "Another account already uses this email address.");
+        }
+        PasswordPolicy.validate(req.password(), username);
+        Role role = roles.findByCode(req.role()).orElseThrow();
+
+        User user = new User();
+        user.setUsername(username);
+        user.setFullName(req.fullName().trim());
+        user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode(req.password()));
+        user.setMustChangePassword(false);
+        user.setPasswordChangedAt(Instant.now(clock));
+        user.setStatus(UserStatus.PENDING);
+        user.setRoles(new HashSet<>(Set.of(role)));
+        users.saveAndFlush(user);
+        audit.recordChange("SIGN_UP", "USER", user.getId(), "Sign-up request from " + username, null, snapshot(user));
     }
 
     @Transactional
