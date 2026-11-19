@@ -65,6 +65,21 @@ A year of invented hospital activity (patients, appointments, consultations, lab
 
 It runs once only (a marker in `system_settings`), and it refuses any database that already has patients, so it can never mix invented records into real ones. It needs a first user to exist, which is the case after section 4.
 
+## 6. Optional: staff logins and sign-up
+
+**Staff logins.** Gives about 40 of the demo employees a sign-in account in the role matching their job (12 doctors, 14 nurses, 4 receptionists, 3 lab staff, 3 pharmacists, 2 accountants, 2 HR managers). Doctor accounts are linked to their doctor profile and see their own appointments. Needs the demo data from section 5.
+
+1. Railway → backend → **Variables**, add:
+   ```
+   HMS_DEMO_STAFF_ENABLED=true
+   HMS_DEMO_STAFF_PASSWORD=<choose: 10+ characters, a letter and a number>
+   ```
+   Every staff login shares this password. Keep it private.
+2. Deploy. The log shows `Demo staff accounts created (40): [...]` with the usernames (first.last).
+3. **Remove both variables** and deploy again. It runs once only.
+
+**Sign-up.** Visitors can request an account at `/sign-up` and choose a staff role (never an administrator role). The account stays **Pending** and cannot sign in until an administrator opens **Users**, filters by *Sign-up requests* and chooses **Approve** (or **Reject**). To give a different role, choose **Edit** before approving. At most 100 requests can wait at once.
+
 ## Troubleshooting
 
 | What you see | Cause | Fix |
