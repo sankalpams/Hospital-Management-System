@@ -89,6 +89,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/sign-up").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/actuator/health").permitAll()
                         .requestMatchers("/api/v1/docs/**").permitAll()   // only enabled in dev profile
                         .anyRequest().authenticated())
