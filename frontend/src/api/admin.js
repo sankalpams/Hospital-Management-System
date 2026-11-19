@@ -9,6 +9,7 @@ export function cleanParams(params) {
 
 export const usersApi = {
   list: (params) => api.get('/users', { params: cleanParams(params) }).then(data),
+  demoStaff: () => api.get('/users/demo-staff').then(data),
   get: (id) => api.get(`/users/${id}`).then(data),
   create: (body) => api.post('/users', body).then(data),
   update: (id, body) => api.put(`/users/${id}`, body).then(data),
